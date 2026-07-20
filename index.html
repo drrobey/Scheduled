@@ -145,7 +145,7 @@
     <div class="relative z-10 flex flex-col flex-grow w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 gap-8">
         
         <!-- HEADER MODULE -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between p-6 sm:p-8 glass-card rounded-3xl gap-6 shadow-soft-indigo">
+        <header class="flex flex-col lg:flex-row lg:items-center justify-between p-6 sm:p-8 glass-card rounded-3xl gap-6 shadow-soft-indigo">
             <div class="flex items-center gap-5">
                 <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-500 text-white shadow-lg">
                     <i class="fa-solid fa-graduation-cap text-2xl"></i>
@@ -158,16 +158,34 @@
                 </div>
             </div>
             
-            <!-- Realtime Clock Widget (12-hour format) -->
-            <div class="flex items-center gap-4 bg-slate-950/40 border border-slate-800/40 px-6 py-3 rounded-2xl min-w-[250px] justify-between">
-                <div class="flex flex-col">
-                    <span id="live-date" class="text-xs text-slate-400 font-semibold font-display tracking-wide">JULY 20, 2026</span>
-                    <span id="live-day" class="text-[10px] text-teal-400 font-medium tracking-wider uppercase">Active Session</span>
+            <div class="flex flex-col sm:flex-row items-stretch gap-4 w-full lg:w-auto">
+                <!-- Realtime Clock Widget (12-hour format) -->
+                <div class="flex items-center gap-4 bg-slate-950/40 border border-slate-800/40 px-6 py-3 rounded-2xl min-w-[240px] justify-between flex-1 sm:flex-none">
+                    <div class="flex flex-col">
+                        <span id="live-date" class="text-xs text-slate-400 font-semibold font-display tracking-wide">JULY 20, 2026</span>
+                        <span id="live-day" class="text-[10px] text-teal-400 font-medium tracking-wider uppercase">Active Session</span>
+                    </div>
+                    <div class="h-8 w-[1px] bg-slate-800"></div>
+                    <div class="flex flex-col items-end">
+                        <span id="live-time" class="text-lg font-bold font-display text-white tracking-wide">01:34:05 PM</span>
+                        <span class="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Time</span>
+                    </div>
                 </div>
-                <div class="h-8 w-[1px] bg-slate-800"></div>
-                <div class="flex flex-col items-end">
-                    <span id="live-time" class="text-lg font-bold font-display text-white tracking-wide">01:34:05 PM</span>
-                    <span class="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Time</span>
+
+                <!-- Syllabus Countdown Timer Widget -->
+                <div class="flex items-center gap-4 bg-slate-950/40 border border-rose-500/15 px-6 py-3 rounded-2xl min-w-[240px] justify-between flex-1 sm:flex-none relative overflow-hidden group transition-all duration-300 hover:border-rose-500/30">
+                    <div class="absolute -right-3 -bottom-3 opacity-[0.03] text-rose-500 text-4xl pointer-events-none transition-transform duration-500 group-hover:scale-110">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-slate-400 font-semibold font-display tracking-wide">SYLLABUS TARGET</span>
+                        <span class="text-[10px] text-rose-400 font-semibold tracking-wider uppercase">May 31, 2027</span>
+                    </div>
+                    <div class="h-8 w-[1px] bg-slate-800"></div>
+                    <div class="flex flex-col items-end">
+                        <span id="countdown-timer" class="text-lg font-bold font-display text-rose-400 tracking-wide">000d 00h</span>
+                        <span class="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Remaining</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -1608,7 +1626,9 @@
             const dateEl = document.getElementById('live-date');
             const timeEl = document.getElementById('live-time');
             const dayEl = document.getElementById('live-day');
+            const countdownEl = document.getElementById('countdown-timer');
 
+            const targetDate = new Date("May 31, 2027 00:00:00").getTime();
             const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
             const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 
@@ -1634,6 +1654,20 @@
                 dateEl.innerText = `${monthName} ${dateNum}, ${yearNum}`;
                 timeEl.innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
                 dayEl.innerText = `${dayName} // WORKSPACE SESSION`;
+
+                // Calculate May 31, 2027 Countdown
+                const diff = targetDate - now.getTime();
+                if (diff > 0) {
+                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    countdownEl.innerText = `${d}d ${h < 10 ? '0' + h : h}h ${m < 10 ? '0' + m : m}m`;
+                } else {
+                    countdownEl.innerText = "COMPLETE!";
+                    countdownEl.classList.remove('text-rose-400');
+                    countdownEl.classList.add('text-teal-400');
+                }
             }
 
             setInterval(updateTime, 1000);
@@ -1649,3 +1683,5 @@
     </script>
 </body>
 </html>
+```
+eof
