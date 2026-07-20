@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicus Pro // Step 1 Tracker & Editor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Plus Jakarta Sans & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft-indigo': '0 10px 40px -10px rgba(99, 102, 241, 0.15)',
+                        'ambient-glow': '0 0 50px -10px rgba(99, 102, 241, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Premium, calm obsidian theme with soft background lights */
+        body {
+            background-color: #090B11;
+            color: #E2E8F0;
+            background-image: 
+                radial-gradient(circle at 20% 10%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 90%, rgba(20, 184, 166, 0.04) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+        
+        /* Soft ambient transitions */
+        .smooth-transition {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Ambient subtle blur/backdrop */
+        .glass-card {
+            background: rgba(17, 22, 34, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .glass-card-hover:hover {
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            background: rgba(17, 22, 34, 0.8);
+            box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Accordion transition wrapper - Dual Direction Hardware Accelerated CSS */
+        .accordion-wrapper {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .accordion-wrapper.open {
+            grid-template-rows: 1fr;
+        }
+        .accordion-inner {
+            overflow: hidden;
+        }
+
+        /* Chevron rotation */
+        .chevron-icon {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .chevron-active {
+            transform: rotate(180deg);
+        }
+
+        /* Smooth Progress Bar Motion */
+        .progress-bar-fluid {
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Custom minimal scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090B11;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E293B;
+            border-radius: 99px;
+            border: 2px solid #090B11;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        input:checked ~ .checkbox-custom {
+            background-color: #6366F1;
+            border-color: #818CF8;
+        }
+
+        /* Micro-animations for checkout states */
+        .topic-text {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .topic-checked-text {
+            text-decoration: line-through;
+            color: #64748b;
+            opacity: 0.55;
+            transform: translateX(2px);
+        }
+
+        .number-pulse {
+            animation: pulse-glow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.3); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+
+        /* Custom glow effects */
+        .premium-glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans flex flex-col antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
+
+    <!-- Ambient glowing nodes -->
+    <div class="fixed top-0 left-1/4 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-10 right-1/4 w-[600px] h-[600px] bg-teal-500/3 rounded-full blur-[150px] pointer-events-none z-0"></div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="relative z-10 flex flex-col flex-grow w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 gap-8">
+        
+        <!-- HEADER MODULE -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between p-6 sm:p-8 glass-card rounded-3xl gap-6 shadow-soft-indigo">
+            <div class="flex items-center gap-5">
+                <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-teal-500 text-white shadow-lg">
+                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-display">
+                        Medicus Pro
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-400 font-medium mt-1">Interactive USMLE Step 1 Curriculum Customizer</p>
+                </div>
+            </div>
+            
+            <!-- Realtime Clock Widget (12-hour format) -->
+            <div class="flex items-center gap-4 bg-slate-950/40 border border-slate-800/40 px-6 py-3 rounded-2xl min-w-[250px] justify-between">
+                <div class="flex flex-col">
+                    <span id="live-date" class="text-xs text-slate-400 font-semibold font-display tracking-wide">JULY 20, 2026</span>
+                    <span id="live-day" class="text-[10px] text-teal-400 font-medium tracking-wider uppercase">Active Session</span>
+                </div>
+                <div class="h-8 w-[1px] bg-slate-800"></div>
+                <div class="flex flex-col items-end">
+                    <span id="live-time" class="text-lg font-bold font-display text-white tracking-wide">01:34:05 PM</span>
+                    <span class="text-[9px] text-slate-500 font-semibold uppercase tracking-widest">Time</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- CINEMATIC GLOBAL PROGRESS BANNER -->
+        <section class="grid grid-cols-1 gap-6">
+            <div class="p-8 glass-card rounded-3xl flex flex-col justify-between shadow-soft-indigo relative overflow-hidden group border border-indigo-500/10 premium-glow">
+                <div class="absolute -right-6 -bottom-6 opacity-[0.03] text-indigo-400 text-[180px] pointer-events-none transition-transform duration-700 group-hover:scale-110">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-slate-400 font-display text-xs font-semibold tracking-wider uppercase">Global Step 1 Preparation Progress</h3>
+                        <div class="flex items-baseline gap-3 mt-2">
+                            <p class="text-5xl font-extrabold font-display text-indigo-400 transition-all duration-300" id="global-percent">0.0%</p>
+                            <span class="text-xs text-slate-500 font-medium font-display" id="global-completed-fraction">0/0 Topics Completed</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:items-end gap-1">
+                        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-xs rounded-lg font-display font-medium self-start sm:self-auto">
+                            Step 1 Milestones
+                        </span>
+                        <p id="global-remaining-hours" class="text-teal-400 text-xs font-display font-semibold mt-1">Remaining Study Block: ~0 hours</p>
+                    </div>
+                </div>
+                
+                <!-- Fluid elegant Progress bar with Glow -->
+                <div class="w-full bg-slate-950/60 rounded-full h-4 border border-slate-800/60 overflow-hidden relative mb-4 p-0.5 shadow-inner">
+                    <div id="global-progress-bar" class="progress-bar-fluid bg-gradient-to-r from-indigo-500 via-purple-500 to-teal-500 h-full rounded-full" style="width: 0%"></div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2 text-xs text-slate-400 border-t border-slate-800/30">
+                    <div class="flex gap-4">
+                        <div><span id="total-subjects-badge" class="font-bold text-slate-300">15 Subjects</span> Configured</div>
+                        <div><span id="total-lectures-badge" class="font-bold text-slate-300">0 Lessons</span> Integrated</div>
+                        <div><span id="total-hours-badge" class="font-bold text-slate-300">~0 hours</span> Study Volume</div>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Fully reactive. Changes synchronize instantly to local browser cache.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SYSTEM NAVIGATION & QUICK TOOLBAR -->
+        <section class="flex flex-col md:flex-row items-center gap-4 justify-between bg-slate-900/20 border border-slate-800/40 p-4 rounded-2xl backdrop-blur-md">
+            <div class="w-full md:w-auto relative flex-grow max-w-md">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
+                <input type="text" id="search-input" placeholder="Search topics, drugs, receptors, or customized lessons..." 
+                    class="w-full pl-11 pr-4 py-2.5 bg-slate-950/50 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/25 rounded-xl outline-none text-sm text-slate-100 placeholder-slate-500 transition-all">
+            </div>
+            
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
+                <!-- Edit mode toggle -->
+                <button onclick="toggleEditMode()" id="edit-mode-btn" class="flex items-center gap-2 p-2.5 px-4 bg-slate-800/30 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-700/40 text-xs font-semibold font-display transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-600 animate-pulse" id="edit-status-light"></span>
+                    <span id="edit-mode-text">Enable Edit Mode</span>
+                </button>
+
+                <div class="h-6 w-[1px] bg-slate-800 hidden sm:block"></div>
+
+                <button onclick="toggleAllExpanded(true)" class="p-2.5 px-3 bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-xl border border-slate-800/60 text-xs font-semibold font-display transition-all" title="Expand All">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <button onclick="toggleAllExpanded(false)" class="p-2.5 px-3 bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-xl border border-slate-800/60 text-xs font-semibold font-display transition-all" title="Collapse All">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+                
+                <button onclick="openWipeModal()" class="p-2.5 px-3.5 bg-rose-950/10 hover:bg-rose-900/20 text-rose-400 rounded-xl border border-rose-900/20 text-xs font-semibold font-display transition-all" title="Wipe Schedule Progress">
+                    <i class="fa-solid fa-trash-can mr-1"></i> Wipe Progress
+                </button>
+
+                <button onclick="openRestoreDefaultsModal()" class="p-2.5 px-3.5 bg-indigo-950/20 hover:bg-indigo-900/30 text-indigo-300 rounded-xl border border-indigo-900/30 text-xs font-semibold font-display transition-all" title="Restore Default USMLE Schedule">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Restore Defaults
+                </button>
+            </div>
+        </section>
+
+        <!-- ADD SUBJECT IN EDIT MODE (HIDDEN BY DEFAULT) -->
+        <div id="edit-controls-container" class="hidden">
+            <button onclick="openSystemModal(null)" class="w-full p-4 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-dashed border-indigo-500/30 flex items-center justify-center gap-2.5 font-display text-sm font-semibold transition-all">
+                <i class="fa-solid fa-plus-circle text-base"></i> Add New Core Subject (System Block)
+            </button>
+        </div>
+
+        <!-- CORE SCHEDULE CONTAINER -->
+        <main class="space-y-6" id="systems-container">
+            <!-- Loading Indicator -->
+            <div class="flex justify-center items-center py-20">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+                <span class="ml-4 font-display font-medium text-slate-400">Syncing database matrix...</span>
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="mt-8 py-6 border-t border-slate-800/40 text-center text-xs text-slate-500 font-medium">
+            <p>MEDICUS STEP 1 COMPANION // CUSTOMIZABLE METRIC WORKSPACE</p>
+            <p class="mt-1 text-slate-600">Created for deep, focused medical studies. All configurations stored locally.</p>
+        </footer>
+    </div>
+
+    <!-- WIPE PROGRESS MODAL -->
+    <div id="wipe-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden smooth-transition">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 shadow-2xl border border-slate-800">
+            <div class="flex items-center gap-4 text-rose-400 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white">Wipe Progress</h3>
+                    <p class="text-xs text-slate-400">Action cannot be undone</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed mb-6">
+                Are you sure you want to completely reset your USMLE Step 1 checkmark progress? This will reset all ticked topics back to 0% but will **keep** all your custom subject/lecture edits.
+            </p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeWipeModal()" class="px-4 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/40 text-sm text-slate-300 transition-all">
+                    Cancel
+                </button>
+                <button onclick="confirmWipeProgress()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-sm text-white font-medium transition-all shadow-lg shadow-rose-600/20">
+                    Wipe Progress
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESTORE DEFAULTS MODAL -->
+    <div id="restore-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden smooth-transition">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 shadow-2xl border border-slate-800">
+            <div class="flex items-center gap-4 text-indigo-400 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white">Restore Curriculum Defaults</h3>
+                    <p class="text-xs text-slate-400">All modifications will be replaced</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed mb-6">
+                Are you sure you want to restore the default high-yield USMLE Step 1 curriculum? This will **override and delete** any custom subjects, edited names, or injected lectures you have added.
+            </p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeRestoreModal()" class="px-4 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/40 text-sm text-slate-300 transition-all">
+                    Cancel
+                </button>
+                <button onclick="confirmRestoreDefaults()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm text-white font-medium transition-all shadow-lg shadow-indigo-600/20">
+                    Yes, Restore Defaults
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBJECT (SYSTEM) FORM MODAL -->
+    <div id="system-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden smooth-transition">
+        <div class="glass-card max-w-lg w-full rounded-2xl p-6 shadow-2xl border border-slate-800">
+            <div class="flex items-center gap-4 text-indigo-400 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl" id="system-modal-icon-badge">
+                    <i class="fa-solid fa-folder-plus"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white" id="system-modal-title">Subject Settings</h3>
+                    <p class="text-xs text-slate-400">Add or edit system block metadata</p>
+                </div>
+            </div>
+            <form id="system-form" onsubmit="saveSystemForm(event)" class="space-y-4">
+                <input type="hidden" id="system-modal-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-display">Subject Name / Block Title</label>
+                    <input type="text" id="system-modal-name-input" required placeholder="e.g. Hematology & Oncology" 
+                        class="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/25 rounded-xl outline-none text-sm text-slate-100 placeholder-slate-600 transition-all">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-display">Theme Accent Color</label>
+                        <select id="system-modal-color-select" class="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/25 rounded-xl outline-none text-sm text-slate-300 transition-all">
+                            <option value="indigo">Calm Indigo</option>
+                            <option value="teal">Cyber Teal</option>
+                            <option value="rose">Soft Rose</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-display">Display Icon</label>
+                        <select id="system-modal-icon-select" class="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/25 rounded-xl outline-none text-sm text-slate-300 transition-all">
+                            <option value="fa-solid fa-dna">DNA Double-Helix</option>
+                            <option value="fa-solid fa-virus">Viral / Microbe</option>
+                            <option value="fa-solid fa-shield-halved">Shield / Immunity</option>
+                            <option value="fa-solid fa-microscope">Microscope / Pathology</option>
+                            <option value="fa-solid fa-capsules">Capsules / Pharma</option>
+                            <option value="fa-solid fa-heart-pulse">Heart Pulse / CV</option>
+                            <option value="fa-solid fa-brain">Brain / Neurology</option>
+                            <option value="fa-solid fa-syringe">Syringe / Medicine</option>
+                            <option value="fa-solid fa-flask">Flask / Lab</option>
+                            <option value="fa-solid fa-bone">Bone / Orthopedics</option>
+                            <option value="fa-solid fa-droplet">Blood / Hematology</option>
+                            <option value="fa-solid fa-utensils">Stomach / GI</option>
+                            <option value="fa-solid fa-users">Psych / Behavioral</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800/60">
+                    <button type="button" onclick="closeSystemModal()" class="px-4 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/40 text-sm text-slate-300 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm text-white font-medium transition-all shadow-lg shadow-indigo-600/20">
+                        Apply Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LECTURE (LESSON) FORM MODAL -->
+    <div id="lecture-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden smooth-transition">
+        <div class="glass-card max-w-2xl w-full rounded-2xl p-6 shadow-2xl border border-slate-800">
+            <div class="flex items-center gap-4 text-indigo-400 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold font-display text-white" id="lecture-modal-title">Lecture Configuration</h3>
+                    <p class="text-xs text-slate-400">Configure lecture metadata and targeted sub-topics</p>
+                </div>
+            </div>
+            <form id="lecture-form" onsubmit="saveLectureForm(event)" class="space-y-4">
+                <input type="hidden" id="lecture-modal-sys-id">
+                <input type="hidden" id="lecture-modal-lec-id">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-display">Lecture Title</label>
+                        <input type="text" id="lecture-modal-name" required placeholder="e.g. Congenital Heart Defects" 
+                            class="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/25 rounded-xl outline-none text-sm text-slate-100 placeholder-slate-600 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-display">Workload Duration</label>
+                        <input type="text" id="lecture-modal-duration" required placeholder="e.g. 2h 15m" 
+                            class="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/25 rounded-xl outline-none text-sm text-slate-100 placeholder-slate-600 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 font-display">Core Subtopics (Click to toggle / edit)</label>
+                    <p class="text-[11px] text-slate-500 mb-3">Add key pathological concepts, drugs, or clinical terms evaluated in this lecture block.</p>
+                    
+                    <!-- Interactive tag injector -->
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="lecture-topic-adder-input" placeholder="Type new subtopic term..." 
+                            class="flex-grow px-4 py-2 bg-slate-950/80 border border-slate-800 focus:border-indigo-500 rounded-xl outline-none text-sm text-slate-100 placeholder-slate-600">
+                        <button type="button" onclick="injectTopicFromForm()" class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-xl font-semibold text-sm font-display transition-all">
+                            Add Subtopic
+                        </button>
+                    </div>
+
+                    <!-- Visual subtopics holder -->
+                    <div class="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3 min-h-[120px] max-h-[220px] overflow-y-auto space-y-2" id="lecture-modal-topics-list">
+                        <!-- Instantiated Dynamically via JS -->
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800/60">
+                    <button type="button" onclick="closeLectureModal()" class="px-4 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/40 text-sm text-slate-300 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm text-white font-medium transition-all shadow-lg shadow-indigo-600/20">
+                        Save Lecture Unit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // BASE STANDARD USMLE STEP 1 CURRICULUM
+        const fallbackDefaultSchedule = [
+            {
+                id: "microbiology",
+                title: "Microbiology & Antimicrobials",
+                icon: "fa-solid fa-virus",
+                color: "teal",
+                lessons: [
+                    { id: "micro-1", name: "Microbiology 1", duration: "2h 50m", topics: ["Normal Flora", "Bacterial structure", "Microbial Pathogenicity"] },
+                    { id: "micro-2", name: "Microbiology 2", duration: "2h 46m", topics: ["Bacterial Toxins", "Bacterial growth", "Bacterial genetics", "Bacterial viruses (Bacteriophages)"] },
+                    { id: "micro-3", name: "Microbiology 3", duration: "2h 0m", topics: ["Bacterial genetics", "Bacterial viruses (Bacteriophages)"] },
+                    { id: "micro-4", name: "Microbiology 4", duration: "2h 37m", topics: ["Staphylococcus aureus", "Staph epidermidis", "Staphylococcus saprophyticus"] },
+                    { id: "micro-5", name: "Microbiology 5", duration: "2h 53m", topics: ["Streptococcus pyogenes", "Streptococcus agalactiae", "Viridians Streptococci", "Streptococcus pneumoniae", "Enterococcus faecalis/faecium"] },
+                    { id: "micro-6", name: "Microbiology 6", duration: "3h 0m", topics: ["Bacillus anthrax", "Bacillus cereus", "Clostridium tetani", "Clostridium botulinum", "Clostridium perfringens", "Clostridium difficile"] },
+                    { id: "micro-7", name: "Microbiology 7", duration: "2h 56m", topics: ["Listeria monocytogenes", "Corynebacterium diphtheriae", "Actinomyces israelii", "Nocardia Asteroides", "Nocardia Brasiliensis", "Mycobacterium tuberculosis", "Mycobacterium leprae"] },
+                    { id: "micro-8", name: "Microbiology 8", duration: "2h 57m", topics: ["Neisseria meningitidis", "Neisseria gonorrhoeae", "Moraxella catarrhalis", "Haemophilus influenzae", "Haemophilus ducreyi", "Pasteurella multocida", "Francisella tularensis", "Bordetella pertussis", "Brucella Species"] },
+                    { id: "micro-9", name: "Microbiology 9", duration: "2h 36m", topics: ["Legionella pneumophila", "Campylobacter jejuni", "Helicobacter pylori", "Vibrio cholerae"] },
+                    { id: "micro-10", name: "Microbiology 10", duration: "3h 20m", topics: ["Pseudomonas aeruginosa", "Shigella Species", "Yersinia pestis", "Yersinia Entercolitica", "Salmonella Species", "Proteus mirabilis/Proteus vulgaris", "Escherichia coli", "Klebsiella pneumoniae", "Gardnerella vaginalis", "Bacteroides fragilis"] },
+                    { id: "micro-11", name: "Microbiology 11", duration: "2h 17m", topics: ["Treponema pallidum", "Leptospira interrogans", "Borrelia burgdorferi", "Borrelia Recurrentis", "Chlamydia trachomatis", "Chlamydophila", "Rickettesia", "Mycoplasma pneumoniae", "Ureaplasma urealyticum", "Bartonella hensele"] },
+                    { id: "micro-12", name: "Microbiology 12", duration: "3h 9m", topics: ["Fungal morphology", "Malassezia furfur", "Dermatophytes", "Sporothrix schenckii", "Histoplasma capsulatum", "Coccidiodes Immitis", "Blastomyces dermatitidis", "Paracoccidiodes brasiliensis", "Aspergillus Fumigates", "Candida albicans", "Cryptococcus neoformans", "Mucor, Rhizopus, Absidia", "Pneumocystis jirovecii"] },
+                    { id: "micro-13", name: "Microbiology 13", duration: "2h 9m", topics: ["Giardia lamblia", "Entamoeba histolytica", "Cryptosporidium", "Toxoplasma gondii", "Naegleria fowleri", "Trypanosoma brucei"] },
+                    { id: "micro-14", name: "Microbiology 14", duration: "2h 27m", topics: ["Plasmodium (P. vivax/ovale, P. falciparum, P. malariae)", "Babesia", "Trypanosoma cruzi", "Leishmania donovani", "Trichomonas vaginalis", "Enterobius vermicularis (pinworm)", "Ascaris lumbricoides", "Strongyloides stercoralis", "Hookworms (Ancylostoma duodenale, Necator)"] },
+                    { id: "micro-15", name: "Microbiology 15", duration: "3h 0m", topics: ["Sarcoptes scabiei", "Pediculus humanus/ Phthirus pubis", "Nature of human viruses", "Parvovirus (B19)", "Human Papilloma Virus (HPV)", "BK Virus", "JC Virus", "Adenovirus"] },
+                    { id: "micro-16", name: "Microbiology 16", duration: "3h 2m", topics: ["HSV-1 and HSV-2", "Varicella Zoster Virus (HHV-3)", "Epstein-Barr Virus (HHV-4)", "Cytomegalovirus (HHV-5)", "Human herpesviruses 6 and 7", "HHV-8", "Variola/Smallpox", "Molluscum contagiosum", "Norovirus", "Hepeviridae", "Enteroviruses", "Rhinoviruses", "Heparnaviruses"] },
+                    { id: "micro-17", name: "Microbiology 17", duration: "2h 56m", topics: ["Yellow fever", "Dengue virus", "Zika virus", "Chikungunya virus", "Rubella virus", "Coronavirus", "SARS-CoV", "Severe acute respiratory syndrome coronavirus 2", "Human Immunodeficiency Virus (HIV)"] },
+                    { id: "micro-18", name: "Microbiology 18", duration: "1h 48m", topics: ["Measles Virus", "Mumps Virus", "Parainfluenza", "Respiratory syncytial virus (RSV)", "Rabies Virus", "Ebola virus", "Influenza virus", "Bunyaviridae", "Arenaviridae", "Rotavirus"] },
+                    { id: "micro-19", name: "Microbiology 19", duration: "1h 47m", topics: ["Hepatitis viruses", "Viral genetics"] },
+                    { id: "micro-20", name: "Microbiology 20", duration: "1h 15m", topics: ["Systemic Microbiology"] },
+                    { id: "micro-21", name: "Microbiology 21", duration: "1h 34m", topics: ["Penicillins", "Beta-lactamase inhibitors", "Cephalosporins", "Imipenem and Meropenem (penems)", "Monobactams", "Vancomycin", "Daptomycin"] },
+                    { id: "micro-22", name: "Microbiology 22", duration: "3h 8m", topics: ["Aminoglycosides", "Tetracyclines", "Glycylcyclines", "Chloramphenicol", "Clindamycin", "Macrolides", "Oxazolidinones", "Sulfonamides", "Dapsone", "Trimethoprim", "Quinolones", "Polymyxins", "Metronidazole", "Rifamycins", "Isoniazid", "Pyrazinamide", "Ethambutol"] },
+                    { id: "micro-23", name: "Microbiology 23", duration: "2h 48m", topics: ["Amphotericin B", "Nystatin", "Azoles", "Flucytosine", "Terbinafine", "Echinocandins", "Griseofulvin", "Antiprotozoal therapy", "Anthelminthic therapy", "Antimalarial drugs", "Chloroquine", "Anti-mite/louse therapy", "Acyclovir, famciclovir, valacyclovir", "Ganciclovir", "Foscarnet", "Cidofovir", "Amantadine", "Zanamivir and Oseltamivir", "Remdesivir", "HIV therapy", "Hepatitis C therapy", "Antibiotics to avoid in Pregnancy", "Antimicrobial prophylaxis"] }
+                ]
+            },
+            {
+                id: "immunology",
+                title: "Immunology",
+                icon: "fa-solid fa-shield-halved",
+                color: "indigo",
+                lessons: [
+                    { id: "imm-1", name: "Immunology 1", duration: "2h 23m", topics: ["Cells of the Immune System", "B lymphocytes antigen receptors", "T lymphocytes antigen receptors"] },
+                    { id: "imm-2", name: "Immunology 2", duration: "2h 56m", topics: ["The generation of receptor diversity", "Selection of B lymphocytes", "Selection of T lymphocytes", "MHC Class I molecules", "MHC Class II molecule", "Lymph nodes", "Spleen", "Antigenic determinants or epitopes", "Hapten", "Acute inflammatory response", "Steps in Extravasation", "Phagocytosis", "Opsonization", "Intracellular Killing"] },
+                    { id: "imm-3", name: "Immunology 3", duration: "2h 39m", topics: ["MHC class I", "MHC class II", "HLA subtypes associated with diseases", "Activation of T Lymphocyte", "Development of the Th1, Th2, and Th17 Subsets", "Development of Cytotoxic T Lymphocytes", "Thymus Dependent-Antigen Activated B Lymphocytes", "Thymus Independent-Antigen Activated B Lymphocytes", "Isotype switching", "Somatic hypermutation"] },
+                    { id: "imm-4", name: "Immunology 4", duration: "2h 35m", topics: ["Humoral immunity", "The primary humoral response", "Antibodies of secondary immune responses", "Complement", "Activation of macrophages", "Activation of cytotoxic T lymphocytes", "Activation of natural killer cells", "Antibody-dependent cell-mediated cytotoxicity"] },
+                    { id: "imm-5", name: "Immunology 5", duration: "1h 34m", topics: ["Interferons", "Cytokines", "Vaccination and Immunotherapy"] },
+                    { id: "imm-6", name: "Immunology 6", duration: "2h 32m", topics: ["Type I (immediate) hypersensitivity", "Type II hypersensitivity", "Type III (immune complexes) Hypersensitivity", "Type IV (T-cell mediated) Hypersensitivity", "Blood transfusion reactions"] },
+                    { id: "imm-7", name: "Immunology 7", duration: "2h 31m", topics: ["X-linked (Bruton) agammaglobulinemia", "Selective IgA deficiency", "Common variable immunodeficiency", "Transient hypogammaglobulinemia of infancy", "Thymic aplasia (DiGeorge syndrome)", "IL-12 receptor deficiency", "Autosomal dominant hyper-IgE syndrome (Job syndrome)", "Chronic mucocutaneous candidiasis", "MHC Class I Deficiency", "Severe combined immunodeficiency (SCID)", "Ataxia-telangiectasia", "Hyper-Mg syndrome", "Wiskott-Aldrich syndrome", "Bare Lymphocyte Syndrome/MHC class II deficiency", "Leukocyte adhesion deficiency (type 1)", "Chédiak-Higashi syndrome", "Chronic granulomatous disease"] },
+                    { id: "imm-8", name: "Immunology 8", duration: "1h 31m", topics: ["Hyperacute rejection", "Acute rejection", "Chronic rejection", "Graft-versus-host disease (GVHD)", "Cyclosporine", "Tacrolimus (FK506)", "Sirolimus (Rapamycin)", "Daclizumab, basiliximab", "Azathioprine", "Mycophenolate Mofetil", "Glucocorticoids"] }
+                ]
+            },
+            {
+                id: "biochemistry",
+                title: "Biochemistry & Genetics",
+                icon: "fa-solid fa-dna",
+                color: "indigo",
+                lessons: [
+                    { id: "biochem-1", name: "Biochemistry 1", duration: "2h 10m", topics: ["Cell cycle phases", "Regulation of cell cycle", "Nucleotide structure and nomenclature", "DNA structure", "Chromatin structure"] },
+                    { id: "biochem-2", name: "Biochemistry 2", duration: "2h 26m", topics: ["DNA Replication", "Comparison of DNA and RNA synthesis", "Mutations in DNA", "Base substitutions (point mutations)", "Frameshift mutations", "DNA Repair"] },
+                    { id: "biochem-3", name: "Biochemistry 3", duration: "2h 14m", topics: ["RNA Transcription", "RNA polymerases", "Production of Eukaryotic mRNA", "Processing of Eukaryotic Pre-Messenger RNA", "Alternative splicing of Eukaryotic primary pre-mRNA transcript", "Regulation of gene expression", "Lac operon"] },
+                    { id: "biochem-4", name: "Biochemistry 4", duration: "1h 52m", topics: ["tRNA", "Genetic code features", "Protein Translation", "Posttranslational modifications", "Chaperone protein", "Proteasomes and Ubiquitin"] },
+                    { id: "biochem-5", name: "Biochemistry 5", duration: "2h 23m", topics: ["Rough endoplasmic reticulum", "Smooth endoplasmic reticulum", "Cell trafficking", "Collagen synthesis and structure", "Osteogenesis Imperfecta", "Ehlers-Danlos syndrome", "Menkes disease", "Elastin", "Marfan syndrome", "Microtubule", "Cilia structure"] },
+                    { id: "biochem-6", name: "Biochemistry 6", duration: "1h 57m", topics: ["Producing Restriction Fragments", "Restriction Endonucleases", "Blotting techniques", "Polymerase chain reaction", "Molecular cloning", "Flow cytometry", "CRISPR/Cas9", "Microarrays", "Karyotyping", "A Fluorescence in situ hybridization", "Enzyme-linked immunosorbent assay", "Gene expression modifications"] },
+                    { id: "biochem-7", name: "Biochemistry 7", duration: "2h 17m", topics: ["Genetic terms", "Autosomal dominant", "Autosomal recessive", "X-linked recessive", "X-linked dominant", "Mitochondrial inheritance", "X inactivation"] },
+                    { id: "biochem-8", name: "Biochemistry 8", duration: "1h 55m", topics: ["Variable expressivity", "Incomplete penetrance", "Loss of heterozygosity", "Pleiotropy", "Anticipation", "Dominant negative mutation", "Locus heterogeneity", "Allelic heterogeneity", "Heteroplasmy", "Imprinting", "Uniparental disomy", "Mosaicism", "Linkage disequilibrium"] },
+                    { id: "biochem-9", name: "Biochemistry 9", duration: "1h 49m", topics: ["Autosomal dominant diseases", "Autosomal recessive diseases", "Cystic fibrosis", "X-linked recessive disorders", "Muscular dystrophies", "Duchenne muscular dystrophy (DMD)", "Becker muscular dystrophy", "Myotonic type 1", "Fragile X syndrome", "Trinucleotide repeat expansion diseases"] },
+                    { id: "biochem-10", name: "Biochemistry 10", duration: "1h 53m", topics: ["Numerical chromosome abnormalities", "Down syndrome (trisomy 21)", "Edwards syndrome (trisomy 18)", "Patau syndrome (trisomy 13)", "Translocation", "Deletions", "Hardy-Weinberg population genetics"] },
+                    { id: "biochem-11", name: "Biochemistry 11", duration: "1h 21m", topics: ["Genetic diagnosis", "Paternity testing"] },
+                    { id: "biochem-genetics", name: "Practicing on Genetics", duration: "0h 30m", topics: ["Practicing on Genetics"] },
+                    { id: "biochem-12", name: "Biochemistry 12", duration: "2h 19m", topics: ["Glycolysis", "Galactose metabolism", "Galactokinase deficiency", "Classic galactosemia", "Sorbitol", "Fructose metabolism", "Essential fructosuria", "Hereditary fructose intolerance"] },
+                    { id: "biochem-13", name: "Biochemistry 13", duration: "2h 14m", topics: ["Pyruvate dehydrogenase", "Pyruvate dehydrogenase complex deficiency", "Pyruvate metabolism", "Citric acid cycle", "Electron transport chain and oxidative phosphorylation", "Gluconeogenesis"] },
+                    { id: "biochem-14", name: "Biochemistry 14", duration: "2h 9m", topics: ["Glycogen metabolism", "Glycogenesis", "Glycogenolysis", "Glycogen storage diseases", "Hexose monophosphate shunt", "Glucose-6-phosphate dehydrogenase deficiency", "ATP production", "Universal electron acceptors"] },
+                    { id: "biochem-15", name: "Biochemistry 15", duration: "2h 14m", topics: ["Fatty acid synthesis", "Triglyceride synthesis", "Lipid mobilization", "Key enzymes in lipid transport", "Lipoprotein functions", "Abetalipoproteinemia", "Familial dyslipidemias"] },
+                    { id: "biochem-16", name: "Biochemistry 16", duration: "2h 21m", topics: ["Fatty acid oxidation", "Systemic primary carnitine deficiency", "Medium chain acyl-CoA dehydrogenase (MCAD) deficiency", "Peroxisomal diseases", "Ketone bodies metabolism", "Sphingolipids", "Lysosomal storage diseases", "Sphingolipidoses", "Mucopolysaccharidoses"] },
+                    { id: "biochem-17", name: "Biochemistry 17", duration: "2h 29m", topics: ["Amino acid metabolism", "Urea cycle", "Hyperammonemia", "Ornithine transcarbamylase deficiency", "Amino acids", "Protein structure", "Amino acid derivatives", "Catecholamine synthesis/tyrosine catabolism", "Phenylketonuria", "Maple syrup urine disease", "Alkaptonuria", "Homocystinuria", "Metabolic fuel use"] },
+                    { id: "biochem-18", name: "Biochemistry 18", duration: "3h 0m", topics: ["Pyrimidine synthesis", "Orotic aciduria", "Purine synthesis", "Purine salvage pathway", "Adenosine deaminase deficiency", "Lesch-Nyhan syndrome", "Water soluble vitamins", "Fat soluble vitamins", "Protein-energy malnutrition", "Ethanol metabolism"] }
+                ]
+            },
+            {
+                id: "pathology",
+                title: "General Pathology",
+                icon: "fa-solid fa-microscope",
+                color: "teal",
+                lessons: [
+                    { id: "path-1", name: "General Pathology 1", duration: "1h 55m", topics: ["Cell injury", "Necrosis", "Apoptosis", "Types of calcification", "Ischemia", "Infarcts: red vs pale", "Free radical injury", "Inflammation", "Erythrocyte sedimentation rate", "Exudate vs transudate"] },
+                    { id: "path-2", name: "General Pathology 2", duration: "1h 48m", topics: ["Leukocyte extravasation", "Wound healing", "Scar formation", "Lipofuscin", "Amyloidosis", "Cellular adaptations"] },
+                    { id: "path-3", name: "General Pathology 3", duration: "2h 10m", topics: ["Neoplasia and neoplastic progression", "Tumor nomenclature", "Tumor grade vs stage", "Hallmarks of cancer", "Immune checkpoint interactions", "Cancer epidemiology", "Common metastases", "Oncogenes", "Tumor suppressor genes", "Carcinogens", "Oncogenic microbes", "Serum tumor markers", "Important immunohistochemical stains", "P-glycoprotein", "Psammoma bodies", "Cachexia", "Paraneoplastic syndromes"] }
+                ]
+            },
+            {
+                id: "pharmacology",
+                title: "General Pharmacology",
+                icon: "fa-solid fa-capsules",
+                color: "indigo",
+                lessons: [
+                    { id: "pharm-1", name: "General Pharmacology 1", duration: "2h 16m", topics: ["Permeation", "Absorption", "Distribution", "Biotransformation"] },
+                    { id: "pharm-2", name: "General Pharmacology 2", duration: "2h 30m", topics: ["Elimination", "Michaelis-Menten Equation", "Lineweaver-Burk Equation", "Full and Partial Agonists", "Duality of Partial Agonists", "Antagonism and Potentiation", "Pharmacologic antagonism", "Toxicity and the Therapeutic Index (TI)", "Types of drug interactions"] },
+                    { id: "pharm-3", name: "General Pharmacology 3", duration: "2h 56m", topics: ["Anatomy of the ANS", "Location of ANS Ganglia", "Neurotransmitters", "ACh receptors", "Drug Receptors Linked Via Coupling Proteins to Intracellular Effectors", "G-protein-linked second messengers", "Cholinomimetic agents", "Anticholinesterase poisoning"] },
+                    { id: "pharm-4", name: "General Pharmacology 4", duration: "2h 7m", topics: ["Muscarinic antagonists", "Atropine", "Sympathomimetics", "Physiologic effects of sympathomimetics"] },
+                    { id: "pharm-5", name: "General Pharmacology 5", duration: "1h 55m", topics: ["Sympatholytics (alpha-2-agonists)", "Beta-blockers", "Alpha-blockers", "Phosphodiesterase inhibitors", "Ingested seafood toxins", "Beers criteria"] }
+                ]
+            },
+            {
+                id: "cardiovascular",
+                title: "Cardiovascular System",
+                icon: "fa-solid fa-heart-pulse",
+                color: "rose",
+                lessons: [
+                    { id: "cv-1", name: "Cardiovascular 1", duration: "2h 38m", topics: ["Development of the Heart", "Septation of the Atria", "Septation of Ventricles", "Septation of the Truncus Arteriosus", "Heart embryology", "Fetal circulation", "Aortic arch derivatives"] },
+                    { id: "cv-2", name: "Cardiovascular 2", duration: "2h 13m", topics: ["Surface Projections of the Heart", "Pericardium", "Arterial Supply of the Heart", "Diaphragm", "Imaging"] },
+                    { id: "cv-3", name: "Cardiovascular 3", duration: "1h 55m", topics: ["Cardiac output", "Mean arterial pressure (MAP)", "Cardiac output variables", "Stroke volume", "Contractility", "Preload", "Afterload", "Ejection fraction", "Wall tension"] },
+                    { id: "cv-4", name: "Cardiovascular 4", duration: "2h 19m", topics: ["Ventricular function curves", "Starling curve", "Cardiac and vascular function curves", "Normal Cardiac Cycle"] },
+                    { id: "cv-5", name: "Cardiovascular 5", duration: "2h 21m", topics: ["Heart sounds", "Systemic venous pulse"] },
+                    { id: "cv-6", name: "Cardiovascular 6", duration: "2h 11m", topics: ["Pressure- volume loops", "Pulmonary wedge pressure", "Introduction to Abnormal heart sounds"] },
+                    { id: "cv-7", name: "Cardiovascular 7", duration: "2h 0m", topics: ["Mitral/Tricusped Regurgitation", "Aortic Stenosis", "Mitral Valve Prolapse", "Ventricular Septal Defect (VSD)", "Aortic Regurgitation", "Mitral Stenosis", "Patent Ductus Arteriosus"] },
+                    { id: "cv-8", name: "Cardiovascular 8", duration: "2h 0m", topics: ["Auscultation of the heart", "Nervous reflexes in the control of blood pressure", "Natriuretic peptides", "Autoregulation of systemic blood flow"] },
+                    { id: "cv-9", name: "Cardiovascular 9", duration: "1h 44m", topics: ["Capillary fluid exchange", "Cardiac conduction system", "The Ventricular Action Potential", "Pacemaker action potential"] },
+                    { id: "cv-10", name: "Cardiovascular 10", duration: "2h 14m", topics: ["Physiology of ECG", "Atrial fibrillation", "Atrial flutter", "Ventricular fibrillation", "Torsades de pointes"] },
+                    { id: "cv-11", name: "Cardiovascular 11", duration: "2h 5m", topics: ["Pathology of ECG", "Atrial fibrillation (Path)", "Atrial flutter (Path)", "Ventricular fibrillation (Path)", "AV block", "Congenital long QT syndrome", "Torsades de pointes (Path)", "Brugada syndrome", "Wolff-Parkinson-White syndrome"] },
+                    { id: "cv-12", name: "Cardiovascular 12", duration: "1h 52m", topics: ["Persistent truncus arteriosus", "D-transposition of great vessels", "Tricuspid atresia", "Tetralogy of Fallot", "Total anomalous pulmonary venous return", "Ventricular septal defect", "Atrial septal defect", "Patent ductus arteriosus", "Coarctation of the aorta", "Ebstein anomaly", "Congenital cardiac defect associations"] },
+                    { id: "cv-13", name: "Cardiovascular 13", duration: "2h 19m", topics: ["Hypertension", "Renal artery stenosis", "Isolated systolic hypertension (ISH)", "Atherosclerosis", "Hyaline arteriolosclerosis", "Hyperplastic arteriolosclerosis", "Monckeberg medial calcific sclerosis", "Hyperlipidemia signs", "Aortic dissection", "Aortic aneurysm", "Abdominal aortic aneurysm"] },
+                    { id: "cv-14", name: "Cardiovascular 14", duration: "2h 34m", topics: ["Angina", "Coronary steal syndrome", "Myocardial infarction", "Evolution of myocardial infarction", "Diagnosis of myocardial infarction", "ECG localization of STEMI", "Sudden cardiac death (SCD)", "Chronic ischemic heart disease"] },
+                    { id: "cv-15", name: "Cardiovascular 15", duration: "2h 2m", topics: ["Bacterial Endocarditis", "Myocarditis", "Acute pericarditis", "Cardiac tamponade", "Myxomas", "Rhabdomyomas"] },
+                    { id: "cv-16", name: "Cardiovascular 16", duration: "2h 34m", topics: ["Dilated cardiomyopathy", "Hypertrophic cardiomyopathy", "Restrictive/infiltrative cardiomyopathy", "Left-sided heart failure", "Right-sided heart failure", "Shock", "Rheumatic fever endocarditis", "Metastasis"] },
+                    { id: "cv-17", name: "Cardiovascular 17", duration: "2h 14m", topics: ["Temporal (Giant Cell) Arteritis", "Takayasu Arteritis", "Polyarteritis Nodosa", "Kawasaki Disease", "Buerger Disease (thromboangiitis obliterans)", "Granulomatosis with polyangiitis (Wegener)", "Microscopic Polyangiitis", "Eosinophilic granulomatosis with polyangiitis (Churg-Strauss Syndrome)", "Henoch-Schönlein Purpura (Immunoglobulin A vasculitis)", "Mixed cryoglobulinemia", "Behçet syndrome"] },
+                    { id: "cv-18", name: "Cardiovascular 18", duration: "2h 12m", topics: ["Calcium channel blockers (CCBs)", "Beta-1 blockers", "Central alpha-2 agonists", "Direct acting vasodilators", "Hypertensive emergency", "Nitrate", "Ranolazine", "Digoxin", "Phosphodiesterase inhibitors", "Sympathomimetics: dobutamine and dopamine", "Sacubitril"] },
+                    { id: "cv-19", name: "Cardiovascular 19", duration: "2h 18m", topics: ["HMG-CoA reductase inhibitors", "Bile acid sequestrants", "Gemfibrozil, Fenofibrate (fibrates)", "Niacin", "Ezetimibe", "PCSK9 inhibitors", "Fish oil and marine omega-3 fatty acids", "Sodium channel blockers (class I)", "Beta-blockers (class II)", "Potassium channel blockers (class III)", "Calcium channel blockers (class IV)", "Unclassified antiarrhythmic"] }
+                ]
+            },
+            {
+                id: "respiratory",
+                title: "Respiratory System",
+                icon: "fa-solid fa-lungs",
+                color: "teal",
+                lessons: [
+                    { id: "resp-1", name: "Respiratory 1", duration: "1h 53m", topics: ["Lung development", "Conducting zone", "Respiratory zone", "Lobes and fissures", "Lymphatic drainage of the lung", "Pneumocytes", "Congenital lung malformations"] },
+                    { id: "resp-2", name: "Respiratory 2", duration: "1h 50m", topics: ["Pleura", "Pleural recesses", "Thoracentesis", "Chest tube insertion", "Lung volumes and capacities", "Pulmonary Function Testing", "Obstructive versus Restrictive Patterns"] },
+                    { id: "resp-3", name: "Respiratory 3", duration: "1h 36m", topics: ["Volume loops", "Dead space", "Alveolar Ventilation", "Lung mechanics"] },
+                    { id: "resp-4", name: "Respiratory 4", duration: "1h 36m", topics: ["Positive Pressure Ventilation", "Lung Compliance", "Inflation Curves", "Pulmonary circulation", "Gas exchange in the lung", "Diffusion Capacity of the lung DLco", "Perfusion-Limited vs. Diffusion-Limited", "Factors Determining Alveolar PCO2", "Factors Determining Alveolar PO2"] },
+                    { id: "resp-5", name: "Respiratory 5", duration: "1h 45m", topics: ["Carbon Dioxide Transport", "Oxygen Transport", "Bohr and Haldane effect", "Oxygen-Hb Dissociation Curves", "Carbon Monoxide Poisoning"] },
+                    { id: "resp-6", name: "Respiratory 6", duration: "1h 38m", topics: ["Neural regulation of alveolar ventilation", "Muscles of Respiration", "Hypoxemia due to High Altitude", "Hypoxemia due to Hypoventilation", "Hypoxemia due to Diffusion Impairment", "Hypoxemia due to Pulmonary Shunt"] },
+                    { id: "resp-7", name: "Respiratory 7", duration: "1h 57m", topics: ["Hypoxemia due to Ventilation-Perfusion mismatch", "VA/Q Mismatches", "Response to exercise", "Hyperbaric Environment", "Rhinosinusitis", "Epistaxis", "Nasal polyps", "Angiofibroma", "Nasopharyngeal carcinoma"] },
+                    { id: "resp-8", name: "Respiratory 8", duration: "1h 55m", topics: ["Acute epiglottitis", "Laryngotracheobronchitis (croup)", "Vocal cord nodules (singer's nodules)", "Laryngeal papilloma", "Laryngeal carcinoma", "Pneumonia", "Lung abscess", "Tuberculosis (TB)", "Deep venous thrombosis", "Pulmonary emboli"] },
+                    { id: "resp-9", name: "Respiratory 9", duration: "1h 55m", topics: ["Chronic bronchitis (blue bloaters)", "Emphysema (pink puffer)", "Asthma", "Bronchiectasis", "Restrictive diseases", "Pulmonary fibrosis", "Pneumoconiosis", "Hypersensitivity pneumonitis", "Sarcoidosis"] },
+                    { id: "resp-10", name: "Respiratory 10", duration: "1h 48m", topics: ["Acute respiratory distress syndrome", "Neonatal respiratory distress syndrome"] },
+                    { id: "resp-11", name: "Respiratory 11", duration: "1h 55m", topics: ["Primary pulmonary hypertension", "Secondary pulmonary hypertension", "Obstructive sleep apnea", "Central sleep apnea", "Obesity hypovallation syndrome", "Small cell lung carcinoma", "Lung Adenocarcinoma", "Squamous cell carcinoma", "Large cell carcinoma", "Bronchial carcinoid tumor", "Pancoast syndrome (superior sulcus tumor)", "Superior vena cava syndrome"] },
+                    { id: "resp-12", name: "Respiratory 12", duration: "1h 55m", topics: ["Pneumothorax", "Pleural effusions", "Mesothelioma", "Mediastinal masses", "Mediastinitis", "Pneumomediastinum", "Atelectasis", "Antihistamines", "Expectorants", "Dextromethorphan", "Pseudoephedrine, phenylephrine", "Treatment of pulmonary hypertension", "Asthma drugs"] }
+                ]
+            },
+            {
+                id: "endocrinology",
+                title: "Endocrine System",
+                icon: "fa-solid fa-syringe",
+                color: "rose",
+                lessons: [
+                    { id: "endo-1", name: "Endocrinology 1", duration: "1h 30m", topics: ["Pharyngeal apparatus", "Branchial arch derivatives", "Branchial pouch derivatives", "Pharyngeal grooves (clefts)", "Thyroid gland", "Lingual thyroid", "Thyroglossal cyst", "Thyroglossal fistula", "DiGeorge syndrome (22q11 deletion)"] },
+                    { id: "endo-2", name: "Endocrinology 2", duration: "1h 56m", topics: ["Hypothalamic - Anterior Pituitary System", "Pituitary gland", "Growth Hormone", "Gigantism", "Acromegaly", "Pituitary dwarfism"] },
+                    { id: "endo-3", name: "Endocrinology 3", duration: "2h 13m", topics: ["Prolactin", "Pituitary adenoma", "Hyperprolactinemia", "Craniopharyngioma", "Sheehan's Syndrome", "Pituitary Apoplexy", "Empty Sella syndrome", "Posterior Pituitary", "Antidiuretic Hormone (vasopressin)", "Diabetes Insipidus", "Primary (Psychogenic) Polydipsia", "Syndrome of inappropriate antidiuretic hormone secretion (SIADH)"] },
+                    { id: "endo-4", name: "Endocrinology 4", duration: "2h 12m", topics: ["Oxytocin", "Adrenal Gland", "Physiological effect of cortisol (glucocorticoid)", "Physiologic action of aldosterone", "Juxtaglomerular Apparatus", "Renin-Angiotensin-Aldosterone System", "Physiologic action of androgens and estrogens", "Cushing syndrome", "Adrenal insufficiency", "Adrenal crisis"] },
+                    { id: "endo-5", name: "Endocrinology 5", duration: "1h 21m", topics: ["Primary hyperaldosteronism (Conn's syndrome)", "Secondary hyperaldosteronism", "Congenital adrenal hyperplasia", "Pheochromocytoma", "Neuroblastoma"] },
+                    { id: "endo-6", name: "Endocrinology 6", duration: "1h 40m", topics: ["Thyroid hormones", "Physiologic action of thyroid hormones", "Regulation of thyroid hormones"] },
+                    { id: "endo-7", name: "Endocrinology 7", duration: "1h 40m", topics: ["Hashimoto's thyroiditis", "Subacute thyroiditis (de Quervain's thyroiditis)", "Riedel thyroiditis", "Congenital Hypothyroidism (cretinism)", "Postpartum thyroiditis", "Grave's disease", "Toxic multinodular goiter", "Thyroid storm", "Jod-Basedow phenomenon", "Thyroid adenoma", "Papillary carcinoma", "Follicular carcinoma", "Medullary carcinoma", "Undifferentiated/anaplastic carcinoma"] },
+                    { id: "endo-8", name: "Endocrinology 8", duration: "2h 28m", topics: ["Calcium hemostasis", "Parathyroid hormone", "Calcitonin", "Vitamin D (cholecalciferol)", "Primary hyperparathyroidism", "Secondary hyperparathyroidism", "Tertiary hyperparathyroidism", "Familial hypocalciuric hypercalcemia", "Milk-alkali syndrome (MAS)"] },
+                    { id: "endo-9", name: "Endocrinology 9", duration: "1h 40m", topics: ["Hypocalcemia", "Pseudohypoparathyroidism type 1A", "Pseudopseudohypoparathyroidism", "Pancreas", "Insulin", "Glucagon"] },
+                    { id: "endo-10", name: "Endocrinology 10", duration: "2h 16m", topics: ["Diabetes mellitus", "Complication of diabetes mellites", "Diabetic Ketoacidosis", "Hyperosmolar hyperglycemic state (HHS)", "Hypoglycemia", "Infant of diabetic mother", "Metabolic Syndrome (Syndrome X)"] },
+                    { id: "endo-11", name: "Endocrinology 11", duration: "1h 36m", topics: ["Insulinoma", "Zollinger-Ellison syndrome (gastrinoma)", "Glucagonoma", "Somatostatinoma", "Neuroendocrine tumors"] },
+                    { id: "endo-12", name: "Endocrinology 12", duration: "1h 58m", topics: ["Multiple Endocrine Neoplasia", "Ghrelin", "Leptin", "Endocannabinoids", "Signaling pathways of endocrine hormones", "Insulin preparations", "Biguanides (Metformin)", "Sulfonylureas", "Glitazones/thiazolidinediones", "GLP-1 analogs", "DPP-4 inhibitors", "Alpha-glucosidase inhibitors", "SGLT-2 inhibitors", "Amylin analogs", "Thionamides", "Radioactive iodine", "Levothyroxine (T4), liothyronine (T3)", "Hypothalamic/pituitary drugs", "Demeclocycline", "Glucocorticoids", "Fludrocortisone", "Cinacalcet", "Sevelamer"] }
+                ]
+            },
+            {
+                id: "nephrology",
+                title: "Nephrology System",
+                icon: "fa-solid fa-flask",
+                color: "indigo",
+                lessons: [
+                    { id: "neph-1", name: "Nephrology 1", duration: "2h 43m", topics: ["Embryonic kidney development", "Unilateral renal agenesis", "Multicystic dysplastic kidney", "Duplex collecting system", "Posterior urethral valves (PUV)", "Amniotic fluid (AF)", "Potter syndrome", "The urachus", "Horseshoe kidney", "Physiologic anatomy of the kidney", "Renal blood flow", "Nephron", "Ureter"] },
+                    { id: "neph-2", name: "Nephrology 2", duration: "2h 54m", topics: ["Overview of renal function", "Fluid compartments", "Formation of urine", "Renal blood flow (Path)", "Glomerular filtration barrier", "Glomerular filtration rate (GFR)", "Filtration Fraction (FF)", "Filtered Load"] },
+                    { id: "neph-3", name: "Nephrology 3", duration: "2h 34m", topics: ["Renal clearance", "Renal transport and clearance", "Reabsorption", "Secretion"] },
+                    { id: "neph-4", name: "Nephrology 4", duration: "3h 0m", topics: ["Proximal Tubule transport", "Loop of Henle transport", "Early Distal Tube transport", "Late Distal Tubule and Collecting Duct transport", "Hydrogen Secretion and Acidification of the Urine"] },
+                    { id: "neph-5", name: "Nephrology 5", duration: "2h 18m", topics: ["Pathophysiology of Potassium Dynamics", "Electrolyte disturbances", "Kidney endocrine functions"] },
+                    { id: "neph-6", name: "Nephrology 6", duration: "2h 30m", topics: ["Acid base disturbance", "Determining a Primary Problem", "Plasma Anion Gap", "Contraction alkalosis", "Compensatory mechanisms", "Davenport Diagram"] },
+                    { id: "neph-7", name: "Nephrology 7", duration: "3h 29m", topics: ["Acute poststreptococcal glomerulonephritis", "Diffuse proliferative glomerulonephritis (DPGN)", "IgA nephropathy (Berger disease)", "Alport syndrome", "Rapidly progressive (crescentic) glomerulonephritis (RPGN)", "Minimal change disease (lipoid nephrosis)", "Focal segmental glomerulosclerosis (FSGS)", "Membranous nephropathy", "Membranoproliferative glomerulonephritis (MPGN)", "Amyloidosis", "Diabetic glomerulonephropathy"] },
+                    { id: "neph-8", name: "Nephrology 8", duration: "3h 16m", topics: ["Nephrolithiasis", "Hydronephrosis", "Vesicoureteral reflux", "Stress Incontinence", "Urge (Hypertonic) Incontinence", "Overflow (Hypotonic) Incontinence", "Cystitis", "Pyelonephritis"] },
+                    { id: "neph-9", name: "Nephrology 9", duration: "2h 47m", topics: ["Acute kidney injury", "Acute tubular necrosis", "Diffuse cortical necrosis", "Acute interstitial nephritis", "Chronic interstitial nephritis", "Renal papillary necrosis", "Chronic Renal Failure", "Cardiorenal syndrome", "Fanconi Syndrome", "Bartter syndrome", "Gitellman syndrome"] },
+                    { id: "neph-10", name: "Nephrology 10", duration: "3h 35m", topics: ["Renal tubular acidosis", "Autosomal dominant polycystic kidney disease", "Autosomal recessive polycystic kidney disease", "Autosomal dominant tubulointerstitial kidney disease", "Simple vs complex renal cysts", "Atheroembolic renal disease", "Renal cell carcinoma", "Renal oncocytoma", "Wilms tumor", "Lower urinary tract carcinoma", "Urothelial (Transitional) cell carcinoma", "Squamous cell carcinoma of the bladder", "Mannitol", "Acetazolamide", "Loop diuretics", "Ethacrynic acid", "Thiazide diuretics", "Potassium-sparing diuretics", "Electrolyte changes associated with the use of diuretics", "Angiotensin converting enzyme inhibitors", "Angiotensin II receptor blockers", "Aliskiren"] }
+                ]
+            },
+            {
+                id: "reproductive",
+                title: "Reproductive System",
+                icon: "fa-solid fa-baby",
+                color: "rose",
+                lessons: [
+                    { id: "repro-1", name: "Reproductive 1", duration: "3h 15m", topics: ["Early fetal development", "Embryologic derivatives", "Sonic hedgehog (SHH) gene", "Fibroblast growth factor (FGF) gene", "Wnt-7 gene", "Homeobox (Hox) genes", "Types of errors in organ morphogenesis", "Teratogens", "Fetal alcohol syndrome", "Fetal hydantoin syndrome", "Neonatal abstinence syndrome"] },
+                    { id: "repro-2", name: "Reproductive 2", duration: "2h 18m", topics: ["Gonad development", "Uterine (Müllerian duct) anomalies", "Hypospadias", "Epispadias", "Descent of testes and ovaries", "Twinning", "Placenta", "Umbilical cord"] },
+                    { id: "repro-3", name: "Reproductive 3", duration: "2h 24m", topics: ["Gonadal drainage", "Female reproductive anatomy", "Pouches of pelvis", "Female reproductive epithelial histology", "Male reproductive anatomy", "Retrograde ejaculation", "Urethral injury", "Penis Anatomy", "Autonomic innervation of the male sexual"] },
+                    { id: "repro-4", name: "Reproductive 4", duration: "2h 22m", topics: ["Oogenesis", "The menstrual cycle", "Monitoring the Menstrual Cycle", "Estrogen", "Progesterone"] },
+                    { id: "repro-5", name: "Reproductive 5", duration: "2h 58m", topics: ["Pregnancy", "hCG (Human chorionic gonadotropin)", "hPL (Human Placental Lactogen)", "Hormonal changes during pregnancy", "Physiologic Adaptations to Pregnancy", "Apgar score", "Low birth weight", "Lactation", "Menopause", "Spermatogenesis", "Organization of the Testes", "Seminiferous tubules", "Androgens", "Tanner stages of sexual development", "Precocious puberty"] },
+                    { id: "repro-6", name: "Reproductive 6", duration: "2h 50m", topics: ["Klinefelter syndrome [male] (47, XXY)", "Turner syndrome [female] (45, ΧΟ)", "Double Y males (XYY)", "Ovotesticular disorder of sex development", "Other disorders of sex development", "Androgen insensitivity syndrome (46, XY)", "5-alpha-reductase deficiency", "Placental aromatase deficiency", "Kallmann syndrome", "Vulvar pathology", "Vaginal Adenosis", "Clear cell adenocarcinoma", "Sarcoma botryoides (Embryonal rhabdomyosarcoma)", "Vaginal squamous cell carcinoma"] },
+                    { id: "repro-7", name: "Reproductive 7", duration: "3h 23m", topics: ["Cervical intraepithelial neoplasia", "Cervical carcinoma", "Acute endometritis", "Chronic endometritis", "Asherman syndrome", "Abnormal uterine bleeding", "Anovulatory cycle", "Endometrial polyp", "Endometriosis", "Adenomyosis", "Primary dysmenorrhea", "Secondary dysmenorrhea", "Leiomyoma (fibroids)", "Leiomyosarcoma", "Endometrial hyperplasia", "Endometrial carcinoma"] },
+                    { id: "repro-8", name: "Reproductive 8", duration: "2h 53m", topics: ["Polycystic ovarian syndrome (PCOS)", "Ovarian tumors", "Ovarian cysts", "Ovarian torsion", "Amenorrhea", "Functional hypothalamic amenorrhea"] },
+                    { id: "repro-9", name: "Reproductive 9", duration: "2h 23m", topics: ["Ectopic Pregnancy", "Spontaneous abortion", "Placental abruption (pathology)", "Placenta previa", "Vasa previa", "Placenta accreta/increta/percreta", "Postpartum hemorrhage", "Gestational hypertension", "Preeclampsia", "Eclampsia", "HELLP syndrome"] },
+                    { id: "repro-10", name: "Reproductive 10", duration: "2h 49m", topics: ["Gestational Trophoblastic disease (GTD)", "Choriocarcinoma", "Polythelia", "Lactational mastitis", "Fat necrosis", "Fibrocystic Breast Changes", "Fibroadenoma", "Intraductal papilloma", "Phyllodes tumor", "Noninvasive Breast carcinomas", "Invasive Breast carcinomas", "Prognostic and predictive factors of breast cancer", "Male breast cancer", "Gynecomastia"] },
+                    { id: "repro-11", name: "Reproductive 11", duration: "2h 59m", topics: ["Peyronie disease", "Ischemic priapism", "Squamous cell carcinoma of penis", "Epididymitis and orchitis", "Testicualr torsion", "Varicocele", "Cryptorchidism", "Congenital Hydrocele", "Acquired hydrocele", "Spermatocele", "Testicular tumors", "Extragonadal germ cell tumors", "Prostatitis", "Benign prostatic hyperplasia (BPH)", "Prostate adenocarcinoma"] },
+                    { id: "repro-12", name: "Reproductive 12", duration: "2h 31m", topics: ["Goserelin, Leuprolide", "Degarelix", "Estrogen drugs", "Selective estrogen receptor modulators", "Aromatase inhibitors", "Hormone replacement therapy", "Progestins", "Antiprogestins", "Combined contraception", "Copper intrauterine device", "Tocolytics", "Danazol", "Testosterone, methyltestosterone", "Antiandrogens", "Tamsulosin", "Phosphodiesterase type 5 inhibitors", "Minoxidil"] }
+                ]
+            },
+            {
+                id: "neurology",
+                title: "Neurology System",
+                icon: "fa-solid fa-brain",
+                color: "indigo",
+                lessons: [
+                    { id: "neuro-1", name: "Neurology 1", duration: "2h 37m", topics: ["Nervous System Development", "Neural tube Defects", "Anencephaly", "Holoprosencephaly", "Lissencephaly", "Spina bifida occulta (hidden)", "Spina bifida cystica (Aperta)", "Spina bifida with myeloschisis", "Arnold chiari malformation", "Dandy walker malformation"] },
+                    { id: "neuro-2", name: "Neurology 2", duration: "3h 0m", topics: ["Spinal nerves", "Motor system", "Muscle tone", "Reflex innervation of skeletal muscle", "Clinical reflexes", "Dorsal column - medial lemniscal pathway", "Anterolateral (spinothalamic tract) pathway", "Sectional anatomy of the spinal cord", "Oculosympathatic pathway"] },
+                    { id: "neuro-3", name: "Neurology 3", duration: "2h 26m", topics: ["Brown sequard syndrome", "Poliomyelitis", "Spinal muscular atrophy (Werding - Hoffman disease)", "Tabes dorsalis", "Amyotrophic lateral sclerosis (lou Gehrig's disease)", "Anterior spinal artery (ASA) occlusion", "Subacute combined degeneration (SCD)", "Syringomyelia", "Cauda Equina Syndrome", "Dermatomes"] },
+                    { id: "neuro-4", name: "Neurology 4", duration: "2h 27m", topics: ["Course of neural systems in brain stem", "Brain stem cut sections", "Cranial Nerve I (Olfactory Nerve)", "Cranial Nerve II (Optic Nerve)", "Visual field defects", "Pupillary Light Reflex", "Marcus gunn pupil (Relative Afferent pupillary Defect)"] },
+                    { id: "neuro-5", name: "Neurology 5", duration: "2h 44m", topics: ["Cranial Nerve III (Oculomotor nerve)", "Accommodation-Convergence Reaction (Near Response)", "Argyl Robertson pupil", "Adie's pupil", "Cranial Nerve IV (Trochlear Nerve, SO4)", "Cranial Nerve V (Trigiminal Nerve)", "Corneal Reflex (Blink reflex)", "Trigeminal neuralgia", "Cranial Nerve VI (Abducens Nerve, LR6)"] },
+                    { id: "neuro-6", name: "Neurology 6", duration: "2h 0m", topics: ["Cranial Nerve VII (Facial nerve)", "Cranial Nerve VIII (Vestibulochochlear Nerve)", "Sound processing", "Hearing Loss", "Cholesteatoma", "Presbycusis", "Hyperacusis"] },
+                    { id: "neuro-7", name: "Neurology 7", duration: "2h 52m", topics: ["Vestibulo-ocular Reflex", "Vestibular evoked nystagmus", "Tests for Nystagmus", "Central vertigo", "Benign paroxysmal positional vertigo (BPPV)", "Ménière disease", "Labyrinthitis", "Voluntary horizontal conjugate gaze", "Cranial Nerve IX (Glossopharyngeal Nerve)", "Cranial Nerve X (Vagus Nerve)", "Gag reflex (pharyngeal reflex)", "Cranial Nerve XI (Accessory Nerve)", "Cranial Nerve XII (Hypoglossal Nerve)"] },
+                    { id: "neuro-8", name: "Neurology 8", duration: "2h 50m", topics: ["Medial medullary syndrome", "Lateral medullary (Wallenberg) syndrome", "Medial pontine syndrome", "Lateral pontine syndrome", "Medial midbrain syndrome", "Dorsal midbrain (parinaud) syndrome", "Cranial nerves and vessel pathway", "Jugular foramen (Vernet) syndrome", "Cranial nerve reflexes", "Common cranial nerve lesions", "Innervation of the tongue", "Cavernous sinus", "Cerebellum", "Cerebellar lesions", "Friedreich Ataxia"] },
+                    { id: "neuro-9", name: "Neurology 9", duration: "3h 25m", topics: ["Basal Ganglia", "Parkinson disease", "Huntington disease", "Wilson disease (hepatolenticular degeneration)", "Hemibalsmus", "Types of tremors", "Thalamus", "Thalamic syndrome", "Hypothalamus", "Subthalamus", "Epithalamus", "Noncommunicating (Obstructive) hydrocephalus", "Communicating hydrocephalus", "Normal pressur hydrocephalus", "Hydrocephalus ex vacuo", "Pseudotumor cerebri"] },
+                    { id: "neuro-10", name: "Neurology 10", duration: "2h 23m", topics: ["Homunculus of the cerebral cortex", "Frontal lobe", "Parietal lobe", "Temporal lobe", "Aphasia", "Occipital lobe", "Blood supply of the cerebral cortex", "Effects of strokes", "Anterograde amnesia", "Korsakoff-syndrome", "Kluver-bucy syndrome"] },
+                    { id: "neuro-11", name: "Neurology 11", duration: "3h 25m", topics: ["Neurons", "Astrocytes", "Microglia", "Ependymal cells", "Wallerian Degeneration", "Sensory receptors", "Neurotransmitter changes with disease", "Meninges", "Blood-brain barrier", "Vomiting center", "Dopaminergic pathways", "Regulation of cerebral perfusion"] },
+                    { id: "neuro-12", name: "Neurology 12", duration: "3h 4m", topics: ["Alzheimer disease", "Frontotemporal dementia (pick's disease)", "Lewy body dementia", "Creutzfeldt-jakob disease", "Vascular dementia", "Multiple Sclerosis", "Guillan-Barre syndrome", "Osmotic demyelination syndrome", "Acute disseminated (postinfectious) encephalomyelitis", "HSV 1 encephalitis", "Progressive multifocal leukoencephalopathy (PML)", "Charcot-Marie-Tooth disease", "Epidural hematoma"] },
+                    { id: "neuro-13", name: "Neurology 13", duration: "3h 25m", topics: ["Diffuse axonal injury", "Strokes", "Transient ischemic attack (TIA)", "Subclavian steal syndrome", "Cluster headache", "Migraine headache", "Tension headache", "Fever vs heat stroke", "Sturge-Weber syndrome", "Tuberous sclerosis", "Neurofibromatosis type 1", "Neurofibromatosis type II", "Von Hippel-Lindau disease"] },
+                    { id: "neuro-14", name: "Neurology 14", duration: "3h 3m", topics: ["Adult primary brain tumors", "Childhood primary brain tumors", "Herniation syndromes", "Diabetic Neuropathy", "Diabetic ophthalmoplegia", "Conjunctivitis", "Refractive errors", "Presbyopia", "Cataract", "Glaucoma", "Glaucoma drugs", "Uveitis", "Age-related macular degeneration (AMD)", "Diabetic retinopathy", "Hypertensive retinopathy", "Central retinal artery occlusion", "Central Retinal vein occlusion", "Retinal detachment", "Retinitis pigmentosa", "Retinitis", "Papilledema", "Leukocoria", "Opioid Analgesic", "Tramadol"] },
+                    { id: "neuro-15", name: "Neurology 15", duration: "2h 15m", topics: ["Types of seizures", "Antiepileptic drugs", "Status Epilepticus", "Sedative - hypnotic anxiolytic drugs", "Nonbenzodiazepine hypnotics", "Suvorexant", "Ramelteon"] },
+                    { id: "neuro-16", name: "Neurology 16", duration: "2h 34m", topics: ["General principles of anesthesia", "Inhaled anesthetics", "Malignant hyperthermia", "Intravenous anesthetics", "Local anesthetics", "Neuromuscular blocking drugs", "Dantrolene", "Baclofen", "Cyclobenzaprine"] }
+                ]
+            },
+            {
+                id: "musculoskeletal",
+                title: "Musculoskeletal System",
+                icon: "fa-solid fa-bone",
+                color: "teal",
+                lessons: [
+                    { id: "mks-1", name: "Musculoskeletal 1", duration: "2h 36m", topics: ["Cleft lip and cleft palate", "Congenital torticollis", "Brachial plexus", "Axillary (C5-C6)", "Musculocutaneous (C5-C7)", "Radial (C5-T1)"] },
+                    { id: "mks-2", name: "Musculoskeletal 2", duration: "2h 38m", topics: ["Median (C5-T1)", "Recurrent branch of median nerve (C5-T1)", "Ulnar (C8-T1)", "Segmental Innervation to Muscles of Upper Limbs", "Erb palsy (waiter's tip)", "Klumpke palsy", "Thoracic outlet syndrome", "Winged scapula"] },
+                    { id: "mks-3", name: "Musculoskeletal 3", duration: "2h 55m", topics: ["Rotator cuff muscles", "Anterior dislocation of the shoulder", "Rotator cuff syndrome", "Clavicular fracture", "Lateral epicondylitis", "Medial epicondylitis", "Wrist bones", "Lunate dislocation", "Scaphoid fractures", "Metacarpal neck fracture", "Distortions of the hand", "Hand muscles", "Carpal tunnel syndrome", "Guyon canal syndrome", "Lumbosacral plexus", "Iliohypogastric (T12-L1)", "Genitofemoral nerve (L1-L2)", "Lateral femoral cutaneous (L2-L3)", "Obturator (L2-L4)"] },
+                    { id: "mks-4", name: "Musculoskeletal 4", duration: "3h 20m", topics: ["Femoral (L2-L4)", "Common peroneal (fibular) nerve", "Tibial (L4-S3)", "Superior gluteal (L4-S1)", "Inferior gluteal (L5-S2)", "Pudendal (S2-S4)", "Avascular necrosis of femoral head", "Compartment syndrome", "Medial collateral ligament (MCL) tear", "Anterior cruciate ligament (ACL) injury", "Meniscal tear", "Unhappy triad"] },
+                    { id: "mks-5", name: "Musculoskeletal 5", duration: "2h 35m", topics: ["Greater trochanteric pain syndrome (Trochanteric bursitis)", "Prepatellar bursitis \"housemaid's knee\"", "Baker cyst", "Patellar fracture", "Ankle joint", "Neurovascular pairing", "Lumbosacral radiculopathy", "Sciatica", "Piriformis syndrome", "Lumbar Spinal Stenosis", "Organization of a Muscle Cell", "Types of skeletal muscle fibers", "Muscle proprioceptors", "Sarcomere (Skeletal and Cardiac Muscle)"] },
+                    { id: "mks-6", name: "Musculoskeletal 6", duration: "3h 16m", topics: ["Organization of a Muscle Cell (Phys)", "Types of skeletal muscle fibers (Phys)", "Muscle proprioceptors (Phys)", "Sarcomere (Skeletal and Cardiac Muscle) (Phys)", "The neuron action potential", "Absolute Refractory Period", "Factors Determining the Velocity of the Action Potential", "The Neuromuscular Junction", "Excitatory Postsynaptic Potentials (EPSP)", "Inhibitory Postsynaptic Potentials (IPSP)", "Skeletal and Cardiac Muscle Cells", "Smooth Muscle Physiology", "Excitation contraction coupling"] },
+                    { id: "mks-7", name: "Musculoskeletal 7", duration: "2h 9m", topics: ["Bone formation", "Bone matrix", "Endochondral ossification", "Membranous ossification", "Osteoblast", "Osteoclast", "Osteocytes", "De Quervain tenosynovitis", "Ganglion cyst", "Iliotibial band syndrome", "Medial tibial stress syndrome", "Patellofemoral syndrome", "Plantar fasciitis"] },
+                    { id: "mks-8", name: "Musculoskeletal 8", duration: "3h 21m", topics: ["Developmental dysplasia of the hip", "Legg-Calvé-Perthes disease", "Slipped capital femoral epiphysis", "Osgood-Schlatter disease (traction apophysitis)", "Radial head subluxation", "Greenstick fracture", "Torus (buckle) fracture", "Achondroplasia", "Osteoporosis", "Osteopetrosis (marble bone disease)", "Rickets/osteomalacia"] },
+                    { id: "mks-9", name: "Musculoskeletal 9", duration: "3h 37m", topics: ["Bone tumors", "Degenerative joint disease (osteoarthritis)", "Rheumatoid arthritis", "Psoriatic arthritis", "Ankylosing spondylitis", "Inflammatory bowel disease", "Reactive arthritis", "Gout", "Pseudogout", "Septic arthritis"] },
+                    { id: "mks-10", name: "Musculoskeletal 10", duration: "3h 9m", topics: ["Sjogren syndrome", "Systemic lupus erythematosus", "Drug induced lupus", "Antiphospholipid syndrome", "Mixed connective tissue disease", "Systemic juvenile idiopathic arthritis", "Polymyositis/Dermatomyositis", "Polymyalgia Rheumatica", "Fibromyalgia", "Myasthenia gravis", "Lambert-Eaton syndrome", "Scleroderma (systemic sclerosis)", "Raynaud phenomenon"] },
+                    { id: "mks-11", name: "Musculoskeletal 11", duration: "2h 53m", topics: ["Skin Structure", "Atopic (eczematous) dermatitis", "Contact dermatitis", "Acne vulgaris", "Rosacea", "Psoriasis", "Lichen planus", "Pemphigus valgaris", "Bullous pemphigoid", "Dermatitis herpatiformis", "Erythema multiforme", "Stevens-Johnson syndrome"] },
+                    { id: "mks-12", name: "Musculoskeletal 12", duration: "2h 15m", topics: ["Vitiligo", "Albinism", "Freckle (ephelis)", "Lentigo", "Melasma (Chloasma)", "Nevus (mole)", "Melanoma", "Impetigo", "Erysipelas", "Cellulitis", "Necrotizing fasciitis", "Skin abscess", "Staphylococcal scalded skin syndrome", "Verruca (wart)", "Molluscum contagiosum", "Angiosarcoma", "Bacillary angiomatosis", "Kaposi sarcoma", "Cherry hemangioma", "Strawberry hemangioma", "Cystic hygroma", "Glomus tumor"] },
+                    { id: "mks-13", name: "Musculoskeletal 13", duration: "3h 46m", topics: ["Acanthosis nigricans", "Actinic keratosis", "Erythema nodosum", "Urticaria (hives)", "Pityriasis rosea", "Pseudofolliculitis barbae", "Sunburn", "Burn", "Seborrheic keratosis", "Basal cell carcinoma", "Squamous cell carcinoma", "Aspirin", "NSAIDS", "Celecoxib", "Acetaminophen", "Leflunomide", "TNF- inhibitors", "Bisphosphonates", "Teriparatide", "Gout drugs"] }
+                ]
+            },
+            {
+                id: "hematology_oncology",
+                title: "Hematology & Oncology",
+                icon: "fa-solid fa-droplet",
+                color: "rose",
+                lessons: [
+                    { id: "hem-1", name: "Hematology & Oncology 1", duration: "1h 56m", topics: ["Fetal erythropoiesis", "Hemoglobin development", "Primary hemeostasis", "Immune thrombocytopenic purpura (ITP)", "Microangiopathic hemolytic anemia", "Qualitative platelet disorders"] },
+                    { id: "hem-2", name: "Hematology & Oncology 2", duration: "3h 24m", topics: ["Hemophilia A", "Hemophilia B (Christmas disease)", "Coagulation factor inhibitor", "Vitamin k deficiency", "Von willbrand disease", "Disseminated intravascular coagulation (DIC)", "Protein C or S deficiency", "Factor V Leiden", "Prothrombin gene mutation", "Antithrombin deficiency", "Iron deficiency anemia"] },
+                    { id: "hem-3", name: "Hematology & Oncology 3", duration: "2h 55m", topics: ["Sideroblastic anemia", "Lead poisoning", "Thalassemia", "Megaloblastic anemia", "Nonmegaloblastic anemia"] },
+                    { id: "hem-4", name: "Hematology & Oncology 4", duration: "2h 51m", topics: ["Hereditary spherocytosis", "Sickle cell anemia", "Paroxysmal nocturnal hemoglobinuria", "Glucose 6 phosphate dehydrogenase deficiency", "Autoimmune hemolytic anemia", "Microangiopathic hemolytic anemia (Onc)", "Macroangiopathic hemolytic anemia"] },
+                    { id: "hem-5", name: "Hematology & Oncology 5", duration: "3h 0m", topics: ["Anemia of chronic disease", "Aplastic anemia", "Pure red cell aplasia (PRCA)", "Hemoglobin electrophoresis", "Acute intermittent porphyria", "Porphyria cutanea tarda", "Acute lymphoblastic leukemia", "Acute myeloid leukemia"] },
+                    { id: "hem-6", name: "Hematology & Oncology 6", duration: "3h 43m", topics: ["Chronic lymphocytic leukemia/Small lymphocytic lymphoma", "Hairy cell leukemia", "Chronic myeloid leukemia", "Polycythemia Vera", "Essential thrombocythemia", "Myelofibrosis", "Follicular lymphoma", "Mantle cell lymphoma", "Marginal zone lymphoma", "Burkitt lymphoma", "Diffuse large B-cell lymphoma", "Primary central nervous system lymphoma", "Adult T-cell leukemia/lymphoma", "Mycosis fungoides", "Hodgkin lymphoma"] },
+                    { id: "hem-7", name: "Hematology & Oncology 7", duration: "2h 22m", topics: ["Multiple myeloma", "Monoclonal gammopathy of undetermined significance (MGUS)", "Waldenstorm macroglobulinemia", "Langerhans cell histiocytosis", "Hemophagocytic lymphohistiocytosis", "Chronic venous insufficiency (CVI)"] },
+                    { id: "hem-8", name: "Hematology & Oncology 8", duration: "2h 49m", topics: ["Warfarin", "Heparin", "Low-molecular-weight heparins", "Direct thrombin inhibitors", "Direct factor Xa inhibitors", "Thrombolytics", "ADP receptor inhibitors", "Glycoprotein IIb/Illa inhibitors", "Cilostazol, dipyridamole"] },
+                    { id: "hem-9", name: "Hematology & Oncology 9", duration: "2h 2m", topics: ["Methotrexate", "5-fluorouracil", "Azathioprine, 6-mercaptopurine", "Cladribine", "Cytarabine (arabinofuranosyl cytidine)", "Busulfan", "Cyclophosphamide, ifosfamide", "Nitrosoureas (Carmustine, lomustine, semustine, streptozocin)", "Bleomycin", "Dactinomycin (actinomycin D)", "Doxorubicin, daunorubicin", "Vincristine, vinblastine", "Paclitaxel, other taxols", "Cisplatin, carboplatin"] }
+                ]
+            },
+            {
+                id: "gastrointestinal",
+                title: "Gastrointestinal System",
+                icon: "fa-solid fa-utensils",
+                color: "teal",
+                lessons: [
+                    { id: "gi-1", name: "Gastrointestinal System part 1", duration: "2h 41m", topics: ["Primitive Gut Tube", "Development and Rotation of Midgut", "Ventral wall defects", "Gastroschisis", "Omphalocele", "Congenital umbilical hernia", "Tracheoesophageal Anomalies", "Hypertrophic pyloric stenosis", "Intestinal atresia", "apple-peel atresia", "Pancreas divisum", "Annular pancreas", "Imperforate anus"] },
+                    { id: "gi-2", name: "Gastrointestinal System part 2", duration: "2h 55m", topics: ["Vitelline duct", "Meckel's diverticulum", "Hirschsprung disease", "Peritoneum", "Retroperitoneal structures", "Important gastrointestinal ligaments", "Abdominal aorta and branches", "Superior mesenteric artery syndrome", "Nutcracker syndrome"] },
+                    { id: "gi-3", name: "Gastrointestinal System part 3", duration: "3h 12m", topics: ["Celiac trunk", "Portosystemic anastomoses", "Pectinate (dentate) line", "Digestive tract anatomy & Histology", "Liver tissue architecture", "Biliary structures"] },
+                    { id: "gi-4", name: "Gastrointestinal System part 4", duration: "3h 4m", topics: ["Femoral region", "Inguinal canal", "Diaphragmatic hernia", "Hiatal Hernia", "Indirect inguinal hernia", "Direct inguinal hernia", "Femoral hernia", "Radiology of the abdomen"] },
+                    { id: "gi-5", name: "Gastrointestinal System part 5", duration: "2h 48m", topics: ["Sialolithiasis", "Sialadenitis", "Salivary gland tumors", "Esophageal Rings and Webs", "Zenker diverticulum", "Mallory-Weiss syndrome", "Achalasia", "Gastroesophageal reflux disease (GERD)", "Barret Esophagus", "Diffuse esophageal spasm", "Infectious esophagitis", "Eosinophilic Esophagitis", "Sclerodermal esophageal dysmotility", "Esophageal Carcinoma"] },
+                    { id: "gi-6", name: "Gastrointestinal System part 6", duration: "3h 0m", topics: ["Gastrointestinal regulatory substances", "Acute gastritis", "Chronic gastritis", "Peptic ulcer disease", "Ménétrier disease", "Gastric carcinoma"] },
+                    { id: "gi-7", name: "Gastrointestinal System part 7", duration: "1h 57m", topics: ["Carbohydrate absorption", "Vitamin/mineral absorption", "Peyer patches", "Lactose intolerance", "Celiac disease", "Tropical sprue", "Whipple disease", "Pancreatic insufficiency"] },
+                    { id: "gi-8", name: "Gastrointestinal System part 8", duration: "3h 10m", topics: ["Crohn's disease", "Ulcerative colitis", "Toxic megacolon", "Irritable bowel syndrome", "Volvulus", "Intussusception", "Intestinal Adhesion", "Paralytic (adynamic) ileus", "Meconium ileus", "Necrotizing enterocolitis", "Acute appendicitis", "Carcinoid tumor"] },
+                    { id: "gi-9", name: "Gastrointestinal System part 9", duration: "2h 33m", topics: ["Acute mesenteric ischemia", "Chronic mesenteric ischemia", "Colonic ischemia", "Angiodysplasia", "Colonic diverticula", "Colonic polyps", "Adenoma to carcinoma sequence", "Familial adenomatous polyposis", "Gardner syndrome", "Turcot syndrome", "Peutz-Jeghers syndrome", "Juvenile polyposis syndrome", "Lynch syndrome", "Colorectal carcinoma"] },
+                    { id: "gi-10", name: "Gastrointestinal System part 10", duration: "1h 51m", topics: ["Pancreatic secretions", "Acute pancreatitis", "Chronic pancreatitis", "Pancreatic carcinoma"] },
+                    { id: "gi-12", name: "Gastrointestinal System part 11", duration: "2h 20m", topics: ["Bile", "Liver cirrhosis", "Serum markers of liver pathology", "Hepatic encephalopathy", "Spontaneous bacterial peritonitis", "Budd-Chiari syndrome", "Portal vein thrombosis", "Reye syndrome", "Hepatic steatosis", "Alcoholic hepatitis", "Alcoholic cirrhosis", "Nonalcoholic fatty liver disease", "Hemochromatosis", "Wilson disease", "Alpha-1 antitrypsin (A1AT) deficiency", "Hepatocellular carcinoma", "Metastasis to liver", "Hepatic adenoma", "Cavernous hemangioma", "Angiosarcoma"] },
+                    { id: "gi-13", name: "Gastrointestinal System part 12", duration: "3h 6m", topics: ["Gilbert syndrome", "Jaundice", "Crigler-Najjar syndrome", "Dubin-Johnson syndrome", "Rotor syndrome", "Physiologic neonatal jaundice", "Biliary atresia", "Cholelithiasis (Gallstones)", "Biliary colic", "Acute calculous cholecystitis", "Acute acalculous cholecystitis", "Gallstone ileus", "Porcelain gallbladder", "Ascending cholangitis", "Primary sclerosing cholangitis", "Primary biliary cholangitis", "Secondary biliary cholangitis", "Anal fissure"] },
+                    { id: "gi-14", name: "Gastrointestinal System part 13", duration: "2h 12m", topics: ["Histamine H2 blockers", "Proton pump inhibitors", "Antacid use", "Bismuth, sucralfate", "Misoprostol", "Octreotide", "Ondansetron", "Metoclopramide", "Aprepitant", "Laxatives", "Loperamide", "Sulfasalazine", "Orlistat", "Ursodiol (ursodeoxycholic acid)"] }
+                ]
+            },
+            {
+                id: "behavioral",
+                title: "Behavioral Science",
+                icon: "fa-solid fa-users",
+                color: "indigo",
+                lessons: [
+                    { id: "beh-1", name: "Behavioral Science 1", duration: "2h 48m", topics: ["Epidemiologic measures", "Incidence and Prevalence", "Crude, Specific, and Standardized Rates", "Interpreting Diagnostic and Screening Tests", "Pre-test Probabilities", "Post-test Probabilities", "The relationship between screening test probability", "Selecting Screening Test Cutoff Values", "Receiver Operating Characteristic (ROC) Curve"] },
+                    { id: "beh-2", name: "Behavioral Science 2", duration: "1h 5m", topics: ["Cross-sectional study", "Case-Control Study", "Cohort Study", "Twin concordance study", "Adoption study"] },
+                    { id: "beh-3", name: "Behavioral Science 3", duration: "2h 26m", topics: ["Relative Risk (Relative Risk Ratio) (RR)", "Attributable Risk (AR)", "Attributable Risk Percent (AR%)", "Absolute risk reduction", "Relative risk reduction", "Number Needed to Treat (NNT)", "Number needed to harm (NNH)", "Odds Ratio", "Experimental Studies (Clinical Trials, Intervention Studies)", "Features of Randomized Controlled Clinical Trials"] },
+                    { id: "beh-4", name: "Behavioral Science 4", duration: "2h 23m", topics: ["Precision", "Accuracy", "Bias and study errors"] },
+                    { id: "beh-5", name: "Behavioral Science 5", duration: "2h 23m", topics: ["Answering Probability Questions", "Mean", "Median", "Mode", "Standard Deviation", "Confidence Intervals (CI)", "P-Values and Hypothesis Testing", "Outcomes of statistical hypothesis testing", "Statistical Power (12)", "Statistical Significance vs. Clinical Significance", "Choosing the Right Statistical Test", "Pearson Correlation coefficient"] },
+                    { id: "beh-6", name: "Behavioral Science 6", duration: "2h 41m", topics: ["Classical Conditioning", "Operant or Instrumental Conditioning", "Types of reinforcers", "Modeling, Observational, or Social Learning", "Therapy/Modification Based on Classical Conditioning", "Therapy/Modification Based on Operant Conditioning", "Immature Defense Mechanisms", "Mature Defense Mechanisms", "Transference and countertransference"] },
+                    { id: "beh-7", name: "Behavioral Science 7", duration: "3h 15m", topics: ["Child Abuse", "Child neglect", "Vulnerable child syndrome", "Domestic Violence", "Elder Abuse", "Shaken baby syndrome", "Human sexuality", "Gender dysphoria", "Paraphilic disorders", "Sexual dysfunction", "Sexuality and aging", "Suicide", "Sleep architecture", "Narcolepsy", "Insomnia", "Sleep terror disorder", "Somnambulism (Sleep-walking)", "Neurotransmitters Associated with Sleep \"SANDman\""] },
+                    { id: "beh-8", name: "Behavioral Science 8", duration: "2h 35m", topics: ["Intelligence Quotient (IQ)", "Intellectual Disability", "Specific learning disorder", "Autism spectrum disorder", "Rett syndrome", "Conduct disorder", "Oppositional defiant disorder", "Separation anxiety disorder", "Tourette syndrome", "Attention-deficit hyperactivity disorder", "Delusions", "Disorganized thought", "Hallucinations", "Schizophrenia"] },
+                    { id: "beh-9", name: "Behavioral Science 9", duration: "2h 8m", topics: ["Major depressive disorder", "Major depressive disorder with psychotic features", "Persistent Depressive Disorder (dysthymia)", "Depression with Seasonal Pattern (seasonal affective disorder)", "Depression with atypical features", "Manic episode", "Hypomanic episode", "Bipolar disorder (manic depression)", "Cyclothymic disorder"] },
+                    { id: "beh-10", name: "Behavioral Science 10", duration: "2h 44m", topics: ["Somatic symptom disorder", "Conversion disorder (functional neurologic symptom disorder)", "Illness anxiety disorder (hypochondriasis)", "Pseudocyesis", "Factitious disorders", "Malingering", "Depersonalization/derealization disorder", "Dissociative amnesia", "Dissociative identity disorder", "Anorexia nervosa", "Bulimia nervosa", "Binge eating disorder", "Pica", "Amnesias", "Delirium", "Dementia", "Personality disorders"] },
+                    { id: "beh-11", name: "Behavioral Science 11", duration: "3h 14m", topics: ["Substance use disorder", "Typical Antipsychotics (first-generation antipsychotics)", "Atypical antipsychotics (second-generation antipsychotics)", "Selective serotonin reuptake inhibitors (SSRIs)", "Serotonin-norepinephrine reuptake inhibitors (SNRIs)", "Serotonin syndrome", "Tricyclic antidepressants (TCAS)", "Monoamine oxidase inhibitors (MOAIs)", "Bupropion", "Mirtazapine", "Trazodone", "Varenicline", "Lithium"] },
+                    { id: "beh-12", name: "Behavioral Science 12", duration: "2h 26m", topics: ["Physician-Patient Relationship", "Types of Questions and Statements", "Legal issues related to medical practice"] },
+                    { id: "beh-13", name: "Behavioral Science 13", duration: "2h 24m", topics: ["Early development milestones", "Stranger anxiety", "Separation anxiety", "Disease prevention", "Major medical insurance plans", "Healthcare payment models", "Medicare and Medicaid", "Hospice care", "Quality and safety", "Quality measurements", "Swiss cheese model", "Types of medical errors", "Medical error analysis"] },
+                    { id: "beh-14", name: "Behavioral Science 14", duration: "2h 24m", topics: ["Ethics"] },
+                    { id: "beh-15", name: "Communication Skills & Patient Safety", duration: "2h 42m", topics: ["Communication Skills & Patient Safety"] }
+                ]
+            }
+        ];
+
+        let activeSchedule = [];
+        let completionState = {};
+        let expandedSystems = {};
+        let editMode = false;
+        let currentFormTopics = []; // temporary buffer for modal modifications
+
+        // Helpers to construct clean random hash string IDs
+        function generateId(prefix) {
+            return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        function initializeScheduleSchema(forceDefault = false) {
+            // Using updated Key namespaces v6 to guarantee caching doesn't block loading default data
+            const savedSchedule = localStorage.getItem('medicus_step1_schedule_v6');
+            const savedCompletion = localStorage.getItem('medicus_step1_completion_v6');
+            const savedExpanded = localStorage.getItem('medicus_step1_expanded_v6');
+
+            if (savedSchedule && !forceDefault) {
+                activeSchedule = JSON.parse(savedSchedule);
+            } else {
+                // Parse standard static layout into standardized structural schema with stable IDs
+                activeSchedule = fallbackDefaultSchedule.map(system => {
+                    const sysId = system.id;
+                    return {
+                        id: sysId,
+                        title: system.title,
+                        icon: system.icon,
+                        color: system.color,
+                        lessons: system.lessons.map(lesson => {
+                            const lecId = lesson.id;
+                            return {
+                                id: lecId,
+                                name: lesson.name,
+                                duration: lesson.duration,
+                                topics: lesson.topics.map((t, idx) => {
+                                    return {
+                                        id: `topic_${sysId}_${lecId}_${idx}`,
+                                        name: t
+                                    };
+                                })
+                            };
+                        })
+                    };
+                });
+                saveScheduleToStorage();
+            }
+
+            if (savedCompletion && !forceDefault) {
+                completionState = JSON.parse(savedCompletion);
+            } else {
+                completionState = {};
+                activeSchedule.forEach(system => {
+                    system.lessons.forEach(lesson => {
+                        lesson.topics.forEach(topic => {
+                            completionState[topic.id] = false;
+                        });
+                    });
+                });
+                saveCompletionToStorage();
+            }
+
+            if (savedExpanded) {
+                expandedSystems = JSON.parse(savedExpanded);
+            } else {
+                expandedSystems = {};
+                activeSchedule.forEach((system, idx) => {
+                    expandedSystems[system.id] = (idx === 0); // open first module by default
+                });
+                saveExpandedToStorage();
+            }
+        }
+
+        // Storage Writeouts
+        function saveScheduleToStorage() {
+            localStorage.setItem('medicus_step1_schedule_v6', JSON.stringify(activeSchedule));
+        }
+
+        function saveCompletionToStorage() {
+            localStorage.setItem('medicus_step1_completion_v6', JSON.stringify(completionState));
+        }
+
+        function saveExpandedToStorage() {
+            localStorage.setItem('medicus_step1_expanded_v6', JSON.stringify(expandedSystems));
+        }
+
+        // Toggle Visual Edit Mode Dashboard Configurator
+        function toggleEditMode() {
+            editMode = !editMode;
+            const btn = document.getElementById('edit-mode-btn');
+            const light = document.getElementById('edit-status-light');
+            const text = document.getElementById('edit-mode-text');
+            const editControls = document.getElementById('edit-controls-container');
+
+            if (editMode) {
+                btn.classList.add('bg-indigo-500/10', 'border-indigo-500/30', 'text-indigo-200');
+                light.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 border border-emerald-400 animate-pulse";
+                text.innerText = "Disable Edit Mode";
+                editControls.classList.remove('hidden');
+            } else {
+                btn.classList.remove('bg-indigo-500/10', 'border-indigo-500/30', 'text-indigo-200');
+                light.className = "w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-600";
+                text.innerText = "Enable Edit Mode";
+                editControls.classList.add('hidden');
+            }
+            renderDashboard();
+            triggerSoftClickAudio();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('systems-container');
+            container.innerHTML = '';
+
+            let grandTotalTopics = 0;
+            let grandCompletedTopics = 0;
+            let grandTotalLectures = 0;
+            let totalHoursCalculated = 0; // cumulative durations parsers
+
+            activeSchedule.forEach((system, systemIndex) => {
+                let systemTotalTopics = 0;
+                let systemCompletedTopics = 0;
+
+                system.lessons.forEach(lesson => {
+                    grandTotalLectures++;
+                    // Basic clean duration calculator (e.g. "2h 30m" -> 2.5 hours)
+                    const matches = lesson.duration.match(/(\d+)h/);
+                    if (matches && matches[1]) {
+                        totalHoursCalculated += parseFloat(matches[1]);
+                    }
+                    const minMatches = lesson.duration.match(/(\d+)m/);
+                    if (minMatches && minMatches[1]) {
+                        totalHoursCalculated += (parseFloat(minMatches[1]) / 60);
+                    }
+
+                    lesson.topics.forEach(topic => {
+                        systemTotalTopics++;
+                        grandTotalTopics++;
+                        if (completionState[topic.id]) {
+                            systemCompletedTopics++;
+                            grandCompletedTopics++;
+                        }
+                    });
+                });
+
+                const systemPercentage = systemTotalTopics > 0 ? ((systemCompletedTopics / systemTotalTopics) * 100).toFixed(1) : 0;
+                const isExpanded = expandedSystems[system.id];
+
+                // Premium visual mappings matching luxury palettes
+                const colorMap = {
+                    teal: { bg: 'bg-teal-500', text: 'text-teal-400', border: 'border-teal-500/20', accentBg: 'bg-teal-500/10' },
+                    indigo: { bg: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/20', accentBg: 'bg-indigo-500/10' },
+                    rose: { bg: 'bg-rose-500', text: 'text-rose-400', border: 'border-rose-500/20', accentBg: 'bg-rose-500/10' }
+                };
+
+                const colors = colorMap[system.color] || colorMap.indigo;
+
+                const systemPanel = document.createElement('div');
+                systemPanel.className = `glass-card rounded-2xl overflow-hidden transition-all duration-300 ${isExpanded ? 'ring-1 ring-slate-800' : ''}`;
+                systemPanel.setAttribute('data-system-id', system.id);
+
+                // Determine if first or last for reordering controls
+                const isFirst = systemIndex === 0;
+                const isLast = systemIndex === activeSchedule.length - 1;
+
+                systemPanel.innerHTML = `
+                    <!-- Panel Header -->
+                    <div class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-800/20 transition-all select-none" onclick="handleSystemHeaderClick('${system.id}', event)">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-slate-900 border ${colors.border} ${colors.text} text-lg">
+                                <i class="${system.icon || 'fa-solid fa-folder'}"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base sm:text-lg font-bold text-slate-100 font-display flex items-center gap-2">
+                                    ${system.title}
+                                </h2>
+                                <p class="text-xs text-slate-400 font-medium">${system.lessons.length} lectures • ${systemTotalTopics} topics</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 justify-between sm:justify-start">
+                            <!-- EDIT ACTIONS (Subject Block Level & Sort Ordering Controls) -->
+                            ${editMode ? `
+                            <div class="flex items-center gap-1.5 mr-2">
+                                <button onclick="moveSystem('${system.id}', -1, event)" class="p-2 text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-800 border border-slate-700/30 rounded-xl text-xs transition-all ${isFirst ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''}" title="Move Up">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                </button>
+                                <button onclick="moveSystem('${system.id}', 1, event)" class="p-2 text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-800 border border-slate-700/30 rounded-xl text-xs transition-all ${isLast ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''}" title="Move Down">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                </button>
+                                <span class="h-6 w-[1px] bg-slate-800 mx-1"></span>
+                                <button onclick="openSystemModal('${system.id}', event)" class="p-2 text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-xl text-xs font-semibold font-display transition-all" title="Edit Subject Details">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteSystem('${system.id}', event)" class="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-xs font-semibold font-display transition-all" title="Delete Entire Subject">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                            ` : ''}
+
+                            <div class="flex flex-col items-end min-w-[120px]">
+                                <span class="text-xs font-semibold font-display ${colors.text}" id="pct-${system.id}">${systemPercentage}% completed</span>
+                                <div class="w-24 bg-slate-950/80 rounded-full h-1.5 border border-slate-800/40 mt-1.5 overflow-hidden">
+                                    <div class="${colors.bg} progress-bar-fluid h-full rounded-full" id="bar-${system.id}" style="width: ${systemPercentage}%"></div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 rounded-xl bg-slate-800/30 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                                <i class="fa-solid fa-chevron-down chevron-icon text-xs ${isExpanded ? 'chevron-active' : ''}" id="chev-${system.id}"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Lesson Panel (Smooth Accordion Grid template) -->
+                    <div id="body-${system.id}" class="accordion-wrapper ${isExpanded ? 'open' : ''}">
+                        <div class="accordion-inner">
+                            <div class="border-t border-slate-800/50 bg-slate-950/10 p-5 space-y-4">
+                                ${renderLessonsList(system, colors)}
+                                
+                                <!-- Inline Edit controls to Append lectures inside subjects -->
+                                ${editMode ? `
+                                <div class="pt-4 border-t border-dashed border-slate-800/50">
+                                    <button onclick="openLectureModal('${system.id}', null)" class="w-full py-3.5 bg-indigo-500/5 hover:bg-indigo-500/10 border border-dashed border-indigo-500/20 rounded-xl text-xs font-semibold font-display text-indigo-400 flex items-center justify-center gap-2 transition-all">
+                                        <i class="fa-solid fa-plus-circle"></i> Add Lecture to "${system.title}"
+                                    </button>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(systemPanel);
+            });
+
+            // Update global responsive stats
+            const totalPercent = grandTotalTopics > 0 ? ((grandCompletedTopics / grandTotalTopics) * 100).toFixed(1) : 0;
+            
+            // Pulse global number count gently
+            const globalPctEl = document.getElementById('global-percent');
+            if (globalPctEl.innerText !== `${totalPercent}%`) {
+                globalPctEl.classList.add('number-pulse');
+                setTimeout(() => globalPctEl.classList.remove('number-pulse'), 300);
+            }
+
+            globalPctEl.innerText = `${totalPercent}%`;
+            document.getElementById('global-progress-bar').style.width = `${totalPercent}%`;
+            document.getElementById('global-completed-fraction').innerText = `${grandCompletedTopics} / ${grandTotalTopics} Topics Completed`;
+
+            document.getElementById('total-subjects-badge').innerText = `${activeSchedule.length} Subjects`;
+            document.getElementById('total-lectures-badge').innerText = `${grandTotalLectures} Lessons`;
+            document.getElementById('total-hours-badge').innerText = `~${Math.round(totalHoursCalculated)} hours`;
+            
+            const totalRemainingHrs = Math.max(0, totalHoursCalculated - ((grandCompletedTopics / (grandTotalTopics || 1)) * totalHoursCalculated)).toFixed(1);
+            document.getElementById('global-remaining-hours').innerText = `Remaining Study Block: ~${totalRemainingHrs} hours`;
+        }
+
+        function moveSystem(systemId, direction, event) {
+            if (event) event.stopPropagation();
+
+            const currentIndex = activeSchedule.findIndex(s => s.id === systemId);
+            if (currentIndex === -1) return;
+
+            const targetIndex = currentIndex + direction;
+            if (targetIndex < 0 || targetIndex >= activeSchedule.length) return;
+
+            // Swap element models
+            const temp = activeSchedule[currentIndex];
+            activeSchedule[currentIndex] = activeSchedule[targetIndex];
+            activeSchedule[targetIndex] = temp;
+
+            saveScheduleToStorage();
+            renderDashboard();
+            triggerSoftClickAudio();
+        }
+
+        function renderLessonsList(system, colors) {
+            if (system.lessons.length === 0) {
+                return `
+                    <div class="text-center py-6 text-xs text-slate-500 italic">
+                        No lectures configured for this subject yet. Click below to add one!
+                    </div>
+                `;
+            }
+
+            return system.lessons.map(lesson => {
+                let lessonTotal = lesson.topics.length;
+                let lessonCompleted = 0;
+
+                lesson.topics.forEach(topic => {
+                    if (completionState[topic.id]) lessonCompleted++;
+                });
+
+                const isLessonComplete = (lessonTotal > 0 && lessonTotal === lessonCompleted);
+
+                return `
+                    <div class="bg-slate-900/20 border border-slate-800/40 rounded-xl p-4 hover:border-slate-700/50 transition-all flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div class="flex-grow w-full">
+                            <div class="flex flex-wrap items-center gap-2 mb-3">
+                                <span class="px-2 py-0.5 rounded-lg bg-slate-950/80 text-slate-400 font-semibold text-[10px] font-display">${lesson.duration}</span>
+                                <h3 class="text-sm font-bold text-slate-200 font-display">${lesson.name}</h3>
+                                <span id="badge-lec-${lesson.id}" class="text-[9px] text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-lg font-semibold uppercase tracking-wider font-display transition-all duration-300 ${isLessonComplete ? '' : 'hidden'}">Completed</span>
+                                
+                                <!-- EDIT ACTIONS (Lecture Level) -->
+                                ${editMode ? `
+                                <div class="flex items-center gap-1.5 ml-auto">
+                                    <button onclick="openLectureModal('${system.id}', '${lesson.id}')" class="p-1 px-2 text-[10px] text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg font-semibold font-display transition-all">
+                                        <i class="fa-solid fa-edit mr-1"></i> Edit Lecture
+                                    </button>
+                                    <button onclick="deleteLecture('${system.id}', '${lesson.id}')" class="p-1 px-2 text-[10px] text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg font-semibold font-display transition-all">
+                                        <i class="fa-solid fa-trash-can mr-1"></i> Delete
+                                    </button>
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            <!-- Subtopics checkboxes grid with crossover animations -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                                ${lesson.topics.map(topic => {
+                                    const isChecked = completionState[topic.id] || false;
+                                    return `
+                                        <label id="lbl-topic-${topic.id}" class="flex items-start gap-3 p-2.5 rounded-xl bg-slate-950/30 border ${isChecked ? 'border-indigo-500/25 bg-indigo-500/5 shadow-inner' : 'border-slate-900/60'} hover:border-slate-800 cursor-pointer select-none transition-all duration-300 group">
+                                            <div class="relative flex items-center mt-0.5">
+                                                <input type="checkbox" 
+                                                    id="chk-topic-${topic.id}"
+                                                    onclick="toggleTopicState('${topic.id}', event)" 
+                                                    ${isChecked ? 'checked' : ''} 
+                                                    class="sr-only">
+                                                <div id="box-topic-${topic.id}" class="w-4.5 h-4.5 rounded-lg border ${isChecked ? 'bg-indigo-500 border-indigo-400 shadow-sm shadow-indigo-500/30' : 'border-slate-700 bg-slate-900'} flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                                                    ${isChecked ? '<i class="fa-solid fa-check text-[9px] text-white font-bold"></i>' : ''}
+                                                </div>
+                                            </div>
+                                            <span id="txt-topic-${topic.id}" class="text-xs topic-text ${isChecked ? 'topic-checked-text' : 'text-slate-300 group-hover:text-slate-200'}">${topic.name}</span>
+                                        </label>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Internal Stats counter -->
+                        <div class="flex flex-row md:flex-col justify-between items-center md:items-end min-w-[70px] self-stretch border-t border-slate-800/20 md:border-t-0 pt-2 md:pt-0">
+                            <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider font-display">Ticked</span>
+                            <span id="stat-lec-${lesson.id}" class="text-sm font-bold font-display text-slate-300 transition-all duration-300">${lessonCompleted}/${lessonTotal}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleTopicState(topicId, event) {
+            const isChecked = event.target.checked;
+            completionState[topicId] = isChecked;
+            saveCompletionToStorage();
+
+            // Trigger soft synth feedback chime
+            triggerSoftClickAudio();
+
+            // 1. Immediately update local checkbox labels smoothly (no laggy recreation!)
+            const labelEl = document.getElementById(`lbl-topic-${topicId}`);
+            const boxEl = document.getElementById(`box-topic-${topicId}`);
+            const textEl = document.getElementById(`txt-topic-${topicId}`);
+
+            if (isChecked) {
+                labelEl.className = "flex items-start gap-3 p-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/25 shadow-inner cursor-pointer select-none transition-all duration-300 group";
+                boxEl.className = "w-4.5 h-4.5 rounded-lg border bg-indigo-500 border-indigo-400 shadow-sm shadow-indigo-500/30 flex items-center justify-center transition-all duration-300 group-hover:scale-105";
+                boxEl.innerHTML = '<i class="fa-solid fa-check text-[9px] text-white font-bold"></i>';
+                textEl.className = "text-xs topic-text topic-checked-text";
+            } else {
+                labelEl.className = "flex items-start gap-3 p-2.5 rounded-xl bg-slate-950/30 border border-slate-900/60 hover:border-slate-800 cursor-pointer select-none transition-all duration-300 group";
+                boxEl.className = "w-4.5 h-4.5 rounded-lg border border-slate-700 bg-slate-900 flex items-center justify-center transition-all duration-300 group-hover:scale-105";
+                boxEl.innerHTML = '';
+                textEl.className = "text-xs topic-text text-slate-300 group-hover:text-slate-200";
+            }
+
+            // 2. Perform in-place recalculations of lesson counts, system progress, and global scores
+            let grandTotalTopics = 0;
+            let grandCompletedTopics = 0;
+            let totalHoursCalculated = 0;
+
+            activeSchedule.forEach(system => {
+                let systemTotalTopics = 0;
+                let systemCompletedTopics = 0;
+
+                system.lessons.forEach(lesson => {
+                    let lessonTotal = lesson.topics.length;
+                    let lessonCompleted = 0;
+
+                    // Compute Lesson Hour metrics
+                    const matches = lesson.duration.match(/(\d+)h/);
+                    if (matches && matches[1]) totalHoursCalculated += parseFloat(matches[1]);
+                    const minMatches = lesson.duration.match(/(\d+)m/);
+                    if (minMatches && minMatches[1]) totalHoursCalculated += (parseFloat(minMatches[1]) / 60);
+
+                    lesson.topics.forEach(topic => {
+                        systemTotalTopics++;
+                        grandTotalTopics++;
+                        if (completionState[topic.id]) {
+                            systemCompletedTopics++;
+                            grandCompletedTopics++;
+                            lessonCompleted++;
+                        }
+                    });
+
+                    // Update lesson completed state tag and counts directly in DOM
+                    const lessonStatEl = document.getElementById(`stat-lec-${lesson.id}`);
+                    const lessonBadgeEl = document.getElementById(`badge-lec-${lesson.id}`);
+                    if (lessonStatEl) {
+                        lessonStatEl.innerText = `${lessonCompleted}/${lessonTotal}`;
+                        lessonStatEl.classList.add('number-pulse');
+                        setTimeout(() => lessonStatEl.classList.remove('number-pulse'), 300);
+                    }
+                    if (lessonBadgeEl) {
+                        if (lessonTotal > 0 && lessonTotal === lessonCompleted) {
+                            lessonBadgeEl.classList.remove('hidden');
+                        } else {
+                            lessonBadgeEl.classList.add('hidden');
+                        }
+                    }
+                });
+
+                // Update system header metrics in-place
+                const systemPercentage = systemTotalTopics > 0 ? ((systemCompletedTopics / systemTotalTopics) * 100).toFixed(1) : 0;
+                const sysBarEl = document.getElementById(`bar-${system.id}`);
+                const sysPctEl = document.getElementById(`pct-${system.id}`);
+                if (sysBarEl) sysBarEl.style.width = `${systemPercentage}%`;
+                if (sysPctEl) sysPctEl.innerText = `${systemPercentage}% completed`;
+            });
+
+            // Update Global Metrics smoothly
+            const totalPercent = grandTotalTopics > 0 ? ((grandCompletedTopics / grandTotalTopics) * 100).toFixed(1) : 0;
+            const globalPctEl = document.getElementById('global-percent');
+            const globalBarEl = document.getElementById('global-progress-bar');
+            const globalFractEl = document.getElementById('global-completed-fraction');
+            const globalRemainingEl = document.getElementById('global-remaining-hours');
+
+            if (globalPctEl && globalPctEl.innerText !== `${totalPercent}%`) {
+                globalPctEl.innerText = `${totalPercent}%`;
+                globalPctEl.classList.add('number-pulse');
+                setTimeout(() => globalPctEl.classList.remove('number-pulse'), 300);
+            }
+            if (globalBarEl) globalBarEl.style.width = `${totalPercent}%`;
+            if (globalFractEl) globalFractEl.innerText = `${grandCompletedTopics} / ${grandTotalTopics} Topics Completed`;
+
+            const totalRemainingHrs = Math.max(0, totalHoursCalculated - ((grandCompletedTopics / (grandTotalTopics || 1)) * totalHoursCalculated)).toFixed(1);
+            if (globalRemainingEl) {
+                globalRemainingEl.innerText = `Remaining Study Block: ~${totalRemainingHrs} hours`;
+            }
+        }
+
+        // Guard click event to prevent expand toggles when executing modifications
+        function handleSystemHeaderClick(systemId, event) {
+            if (event.target.closest('button') || event.target.closest('a') || event.target.closest('form') || event.target.closest('input')) {
+                return;
+            }
+            toggleSystemCollapse(systemId);
+        }
+
+        function toggleSystemCollapse(systemId) {
+            expandedSystems[systemId] = !expandedSystems[systemId];
+            saveExpandedToStorage();
+            
+            const targetBody = document.getElementById(`body-${systemId}`);
+            const chevron = document.getElementById(`chev-${systemId}`);
+            
+            if (expandedSystems[systemId]) {
+                targetBody.classList.add('open');
+                if (chevron) chevron.classList.add('chevron-active');
+            } else {
+                targetBody.classList.remove('open');
+                if (chevron) chevron.classList.remove('chevron-active');
+            }
+        }
+
+        function toggleAllExpanded(expand) {
+            activeSchedule.forEach(system => {
+                expandedSystems[system.id] = expand;
+                const body = document.getElementById(`body-${system.id}`);
+                const chevron = document.getElementById(`chev-${system.id}`);
+                if (body) {
+                    if (expand) {
+                        body.classList.add('open');
+                        if (chevron) chevron.classList.add('chevron-active');
+                    } else {
+                        body.classList.remove('open');
+                        if (chevron) chevron.classList.remove('chevron-active');
+                    }
+                }
+            });
+            saveExpandedToStorage();
+        }
+
+        function openSystemModal(systemId = null, event = null) {
+            if (event) event.stopPropagation();
+            
+            const modal = document.getElementById('system-modal');
+            const form = document.getElementById('system-form');
+            const modalTitle = document.getElementById('system-modal-title');
+            
+            form.reset();
+
+            if (systemId) {
+                // Editing mode
+                const sys = activeSchedule.find(s => s.id === systemId);
+                if (sys) {
+                    modalTitle.innerText = `Edit Subject Settings`;
+                    document.getElementById('system-modal-id').value = sys.id;
+                    document.getElementById('system-modal-name-input').value = sys.title;
+                    document.getElementById('system-modal-color-select').value = sys.color;
+                    document.getElementById('system-modal-icon-select').value = sys.icon;
+                }
+            } else {
+                // Addition mode
+                modalTitle.innerText = `Add New Subject Block`;
+                document.getElementById('system-modal-id').value = '';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeSystemModal() {
+            document.getElementById('system-modal').classList.add('hidden');
+        }
+
+        function saveSystemForm(event) {
+            event.preventDefault();
+            const sysId = document.getElementById('system-modal-id').value;
+            const name = document.getElementById('system-modal-name-input').value.trim();
+            const color = document.getElementById('system-modal-color-select').value;
+            const icon = document.getElementById('system-modal-icon-select').value;
+
+            if (sysId) {
+                // Update
+                const sys = activeSchedule.find(s => s.id === sysId);
+                if (sys) {
+                    sys.title = name;
+                    sys.color = color;
+                    sys.icon = icon;
+                }
+            } else {
+                // Create
+                const newId = generateId('sys');
+                activeSchedule.push({
+                    id: newId,
+                    title: name,
+                    icon: icon,
+                    color: color,
+                    lessons: []
+                });
+                expandedSystems[newId] = true; // Auto expand on create
+            }
+
+            saveScheduleToStorage();
+            saveExpandedToStorage();
+            renderDashboard();
+            closeSystemModal();
+            triggerSoftClickAudio();
+        }
+
+        function deleteSystem(systemId, event) {
+            if (event) event.stopPropagation();
+            
+            const targetSys = activeSchedule.find(s => s.id === systemId);
+            const confirmed = window.confirm(`Confirm removing "${targetSys?.title || 'this system'}" and all its related lectures?`);
+            if (!confirmed) return;
+
+            // Remove relevant checklist states
+            if (targetSys) {
+                targetSys.lessons.forEach(lesson => {
+                    lesson.topics.forEach(topic => {
+                        delete completionState[topic.id];
+                    });
+                });
+            }
+
+            activeSchedule = activeSchedule.filter(s => s.id !== systemId);
+            saveScheduleToStorage();
+            saveCompletionToStorage();
+            renderDashboard();
+        }
+
+        function openLectureModal(sysId, lectureId = null) {
+            const modal = document.getElementById('lecture-modal');
+            const titleEl = document.getElementById('lecture-modal-title');
+            
+            document.getElementById('lecture-modal-sys-id').value = sysId;
+            document.getElementById('lecture-modal-lec-id').value = lectureId || '';
+            document.getElementById('lecture-topic-adder-input').value = '';
+
+            const system = activeSchedule.find(s => s.id === sysId);
+            if (!system) return;
+
+            if (lectureId) {
+                // Edit
+                const lesson = system.lessons.find(l => l.id === lectureId);
+                if (lesson) {
+                    titleEl.innerText = `Edit Lecture Details // ${system.title}`;
+                    document.getElementById('lecture-modal-name').value = lesson.name;
+                    document.getElementById('lecture-modal-duration').value = lesson.duration;
+                    
+                    // Clone active sub-topics into our temporary buffer
+                    currentFormTopics = lesson.topics.map(topic => {
+                        return { id: topic.id, name: topic.name };
+                    });
+                }
+            } else {
+                // Add
+                titleEl.innerText = `Add Lecture // ${system.title}`;
+                document.getElementById('lecture-modal-name').value = '';
+                document.getElementById('lecture-modal-duration').value = '2h 0m';
+                currentFormTopics = [];
+            }
+
+            renderFormTopicsList();
+            modal.classList.remove('hidden');
+        }
+
+        function closeLectureModal() {
+            document.getElementById('lecture-modal').classList.add('hidden');
+        }
+
+        // Add topic temporarily to modal view list
+        function injectTopicFromForm() {
+            const input = document.getElementById('lecture-topic-adder-input');
+            const name = input.value.trim();
+            if (!name) return;
+
+            currentFormTopics.push({
+                id: generateId('topic'),
+                name: name
+            });
+            input.value = '';
+            renderFormTopicsList();
+        }
+
+        function renderFormTopicsList() {
+            const listEl = document.getElementById('lecture-modal-topics-list');
+            listEl.innerHTML = '';
+
+            if (currentFormTopics.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-8 text-slate-600 text-xs italic">
+                        No subtopics added yet. Use input box above to append pathologic items.
+                    </div>
+                `;
+                return;
+            }
+
+            currentFormTopics.forEach((topic, idx) => {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs";
+                row.innerHTML = `
+                    <input type="text" value="${topic.name}" 
+                        onchange="updateFormTopicName('${topic.id}', this.value)"
+                        class="bg-transparent text-slate-200 focus:outline-none focus:border-b focus:border-indigo-500 w-4/5 font-medium px-1">
+                    <button type="button" onclick="removeFormTopic('${topic.id}')" class="text-rose-400 hover:text-rose-300 p-1 px-2">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                `;
+                listEl.appendChild(row);
+            });
+        }
+
+        function updateFormTopicName(id, val) {
+            const topic = currentFormTopics.find(t => t.id === id);
+            if (topic) {
+                topic.name = val.trim();
+            }
+        }
+
+        function removeFormTopic(id) {
+            currentFormTopics = currentFormTopics.filter(t => t.id !== id);
+            renderFormTopicsList();
+        }
+
+        function saveLectureForm(event) {
+            event.preventDefault();
+            const sysId = document.getElementById('lecture-modal-sys-id').value;
+            const lecId = document.getElementById('lecture-modal-lec-id').value;
+            const name = document.getElementById('lecture-modal-name').value.trim();
+            const duration = document.getElementById('lecture-modal-duration').value.trim();
+
+            const system = activeSchedule.find(s => s.id === sysId);
+            if (!system) return;
+
+            if (lecId) {
+                // Update existing
+                const lesson = system.lessons.find(l => l.id === lecId);
+                if (lesson) {
+                    lesson.name = name;
+                    lesson.duration = duration;
+                    
+                    // Keep checked states for retained topics, set default falses for newly added ones
+                    const oldTopicIds = lesson.topics.map(t => t.id);
+                    lesson.topics = currentFormTopics.map(item => {
+                        if (!oldTopicIds.includes(item.id)) {
+                            completionState[item.id] = false;
+                        }
+                        return item;
+                    });
+                }
+            } else {
+                // Create new
+                const newLecId = generateId('lec');
+                currentFormTopics.forEach(t => {
+                    completionState[t.id] = false;
+                });
+
+                system.lessons.push({
+                    id: newLecId,
+                    name: name,
+                    duration: duration,
+                    topics: currentFormTopics
+                });
+            }
+
+            saveScheduleToStorage();
+            saveCompletionToStorage();
+            renderDashboard();
+            closeLectureModal();
+            triggerSoftClickAudio();
+        }
+
+        function deleteLecture(sysId, lectureId) {
+            const system = activeSchedule.find(s => s.id === sysId);
+            if (!system) return;
+
+            const targetLec = system.lessons.find(l => l.id === lectureId);
+            const confirmed = window.confirm(`Remove "${targetLec?.name}" entirely?`);
+            if (!confirmed) return;
+
+            if (targetLec) {
+                targetLec.topics.forEach(t => {
+                    delete completionState[t.id];
+                });
+            }
+
+            system.lessons = system.lessons.filter(l => l.id !== lectureId);
+            saveScheduleToStorage();
+            saveCompletionToStorage();
+            renderDashboard();
+        }
+
+        // WIPE CHECKBOXES COMPLETION PROGRESS ONLY
+        function openWipeModal() {
+            document.getElementById('wipe-modal').classList.remove('hidden');
+        }
+
+        function closeWipeModal() {
+            document.getElementById('wipe-modal').classList.add('hidden');
+        }
+
+        function confirmWipeProgress() {
+            Object.keys(completionState).forEach(key => {
+                completionState[key] = false;
+            });
+            saveCompletionToStorage();
+            renderDashboard();
+            closeWipeModal();
+        }
+
+        // RESTORE ORIGINAL DATA CURRICULUM
+        function openRestoreDefaultsModal() {
+            document.getElementById('restore-modal').classList.remove('hidden');
+        }
+
+        function closeRestoreModal() {
+            document.getElementById('restore-modal').classList.add('hidden');
+        }
+
+        function confirmRestoreDefaults() {
+            initializeScheduleSchema(true);
+            renderDashboard();
+            closeRestoreModal();
+            triggerSoftClickAudio();
+        }
+
+        function triggerSoftClickAudio() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 Chime
+                osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.05); // G5 Harmony
+                
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.06);
+            } catch (e) {
+                // Autoplay policy bypass silently
+            }
+        }
+
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const originalPanels = document.querySelectorAll('#systems-container > div');
+
+            if (query === "") {
+                renderDashboard();
+                return;
+            }
+
+            originalPanels.forEach(panel => {
+                const sysId = panel.getAttribute('data-system-id');
+                const system = activeSchedule.find(s => s.id === sysId);
+                if (!system) return;
+
+                let matchesSystem = false;
+                const body = document.getElementById(`body-${sysId}`);
+                const lessonsElements = body.querySelectorAll('.bg-slate-900\\/20');
+
+                system.lessons.forEach((lesson, index) => {
+                    const lessonElem = lessonsElements[index];
+                    if (!lessonElem) return;
+
+                    const matchLessonName = lesson.name.toLowerCase().includes(query);
+                    const matchTopics = lesson.topics.some(t => t.name.toLowerCase().includes(query));
+
+                    if (matchLessonName || matchTopics) {
+                        matchesSystem = true;
+                        lessonElem.classList.remove('hidden');
+                        
+                        const topicLabels = lessonElem.querySelectorAll('label');
+                        lesson.topics.forEach((topic, tIdx) => {
+                            const lbl = topicLabels[tIdx];
+                            if (lbl) {
+                                if (topic.name.toLowerCase().includes(query)) {
+                                    lbl.classList.add('border-indigo-500/40', 'bg-indigo-500/10');
+                                } else {
+                                    lbl.classList.remove('border-indigo-500/40', 'bg-indigo-500/10');
+                                }
+                            }
+                        });
+                    } else {
+                        lessonElem.classList.add('hidden');
+                    }
+                });
+
+                if (matchesSystem) {
+                    panel.classList.remove('hidden');
+                    body.classList.add('open'); 
+                    const chevron = document.getElementById(`chev-${sysId}`);
+                    if (chevron) chevron.classList.add('chevron-active');
+                } else {
+                    panel.classList.add('hidden');
+                    body.classList.remove('open');
+                }
+            });
+        });
+
+        function runRealtimeClock() {
+            const dateEl = document.getElementById('live-date');
+            const timeEl = document.getElementById('live-time');
+            const dayEl = document.getElementById('live-day');
+
+            const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+            const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+
+            function updateTime() {
+                const now = new Date();
+                
+                const dayName = days[now.getDay()];
+                const monthName = months[now.getMonth()];
+                const dateNum = now.getDate();
+                const yearNum = now.getFullYear();
+
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                let seconds = now.getSeconds();
+                let ampm = hours >= 12 ? 'PM' : 'AM';
+
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                hours = hours < 10 ? '0' + hours : hours;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+
+                dateEl.innerText = `${monthName} ${dateNum}, ${yearNum}`;
+                timeEl.innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
+                dayEl.innerText = `${dayName} // WORKSPACE SESSION`;
+            }
+
+            setInterval(updateTime, 1000);
+            updateTime();
+        }
+
+        // INITIALIZE COMPANION APPLICATION ON LOAD
+        window.onload = function() {
+            initializeScheduleSchema();
+            renderDashboard();
+            runRealtimeClock();
+        }
+    </script>
+</body>
+</html>
